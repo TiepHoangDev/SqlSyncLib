@@ -241,9 +241,9 @@ namespace SqlSyncLib.LogicRestore
         {
             _primaryServerSetting = primaryServerSetting;
         }
-        private readonly PrimaryServerSetting _primaryServerSetting;
-        private Channel<IHeaderBackupItem?> _channelNotify;
-        private Channel<IHeaderBackupItem?> _channelSendBackup;
+        protected readonly PrimaryServerSetting _primaryServerSetting;
+        protected Channel<IHeaderBackupItem?>? _channelNotify;
+        protected Channel<IHeaderBackupItem?>? _channelSendBackup;
 
         public override async Task RunAsync(CancellationToken cancellationToken)
         {
