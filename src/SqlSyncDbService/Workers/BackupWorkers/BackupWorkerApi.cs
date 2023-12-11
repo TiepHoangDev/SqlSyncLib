@@ -1,4 +1,5 @@
-﻿using SqlSyncLib.LogicBase;
+﻿using SqlSyncDbService.Workers.Helpers;
+using SqlSyncLib.LogicBase;
 using System.Diagnostics;
 
 namespace SqlSyncLib.Workers.BackupWorkers

@@ -5,9 +5,9 @@ using Microsoft.Net.Http.Headers;
 using SqlSyncDbService.Workers.Interfaces;
 using System.Reflection;
 
-namespace SqlSyncLib.Workers.BackupWorkers
+namespace SqlSyncDbService.Workers.Helpers
 {
-    public abstract class BackupDatabaseBase : IFileRestore
+    public abstract class BackupDatabaseBase
     {
         public virtual async Task<bool> ApplyAsync(string sqlConnectString, string query)
         {
@@ -37,21 +37,5 @@ namespace SqlSyncLib.Workers.BackupWorkers
         }
 
         protected abstract string GetQueryRestore(string dbName, string pathFile);
-
-        public async Task<IFileRestore> BackupAsync(IWorkerConfig workerConfig, string pathFile)
-        {
-            var sqlConnectString = workerConfig?.SqlConnectString ?? throw new ArgumentNullException(nameof(workerConfig.SqlConnectString));
-            var tempFile = Path.GetTempFileName();
-            if (await CreateBackupAsync(sqlConnectString, tempFile))
-            {
-                return this;
-            }
-            throw new Exception("Create backup fail!");
-        }
-
-        public Task<bool> RestoreAsync(IWorkerConfig workerConfig, string pathFile)
-        {
-            throw new NotImplementedException();
-        }
     }
 }

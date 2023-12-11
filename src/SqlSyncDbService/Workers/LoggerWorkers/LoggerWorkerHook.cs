@@ -1,7 +1,7 @@
 ﻿using System.Diagnostics;
 using SqlSyncDbService.Workers.Interfaces;
 
-namespace SqlSyncLib.Workers.BackupWorkers
+namespace SqlSyncDbService.Workers.LoggerWorkers
 {
     public class LoggerWorkerHook : IWorkerHook
     {

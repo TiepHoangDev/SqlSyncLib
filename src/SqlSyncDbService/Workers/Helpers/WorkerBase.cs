@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using SqlSyncDbService.Workers.Interfaces;
+﻿using SqlSyncDbService.Workers.Interfaces;
+using SqlSyncDbService.Workers.LoggerWorkers;
 
-namespace SqlSyncLib.Workers.BackupWorkers
+namespace SqlSyncDbService.Workers.Helpers
 {
     public abstract class WorkerBase : IWorker
     {
