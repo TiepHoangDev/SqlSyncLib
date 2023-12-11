@@ -1,7 +1,7 @@
 using Microsoft.AspNetCore.Antiforgery;
 using SqlSyncDbService.Services;
 using SqlSyncDbService.Workers.Interfaces;
-using SqlSyncLib.Workers;
+using SqlSyncDbService.Workers.ManageWorkers;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -22,7 +22,7 @@ app.UseSwaggerUI();
 app.UseDeveloperExceptionPage();
 app.MapControllers();
 
-app.MapGet("/", (int b) => DateTime.Now);
+app.MapGet("/", () => DateTime.Now);
 
 app.UseRouting();
 app.UseEndpoints(configure =>

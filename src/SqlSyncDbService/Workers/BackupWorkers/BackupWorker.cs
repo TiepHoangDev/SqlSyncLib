@@ -50,13 +50,13 @@ namespace SqlSyncLib.Workers.BackupWorkers
             return await new BackupWorkerApi().BackupFull(BackupConfig, BackupState);
         }
 
-        public string GetFileBackup(string version)
+        public string GetFileBackup(string? versionToDownload, out string downloadVersion)
         {
-            if (version.CompareTo(BackupState.CurrentVersion) > 0) 
-                throw new Exception($"version={version} is not valid. CurrentVersion is {BackupState.CurrentVersion}");
+            if (versionToDownload?.CompareTo(BackupState.CurrentVersion) > 0)
+                throw new Exception($"version={versionToDownload} is not valid. CurrentVersion is {BackupState.CurrentVersion}");
 
-            var downloadVersion = version;
-            if (version.CompareTo(BackupState.MinVersion) < 0)
+            downloadVersion = versionToDownload ?? BackupState.MinVersion;
+            if (versionToDownload?.CompareTo(BackupState.MinVersion) < 0)
             {
                 downloadVersion = BackupState.MinVersion;
             }

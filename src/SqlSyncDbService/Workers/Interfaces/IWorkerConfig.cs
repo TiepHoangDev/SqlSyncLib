@@ -4,5 +4,6 @@
     {
         TimeSpan DelayTime { get; }
         DateTime? LastRun { get; }
+        string? SqlConnectString { get; }
     }
 }

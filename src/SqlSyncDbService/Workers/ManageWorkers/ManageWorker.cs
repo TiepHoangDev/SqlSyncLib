@@ -5,7 +5,7 @@ using SqlSyncLib.Workers.BackupWorkers;
 using System.Reflection;
 using System.Text.Json;
 
-namespace SqlSyncLib.Workers
+namespace SqlSyncDbService.Workers.ManageWorkers
 {
     [ApiController, Route("ManageWorker")]
     public class ManageWorker : ControllerBase, IManageWorker
@@ -87,15 +87,15 @@ namespace SqlSyncLib.Workers
         }
 
 
-        [HttpPost, Route("GetFileBackup")]
-        public IResult GetFileBackup(GetFileBackupRequest getFileBackup)
+        [HttpGet, Route(GetNewBackupRequest.router)]
+        public IResult GetFileBackup([FromQuery] GetNewBackupRequest getFileBackup)
         {
             var workers = GetWorkers(new List<string> { getFileBackup.dbId });
             var worker = workers.FirstOrDefault();
             if (worker is BackupWorker backup)
             {
-                var filePath = backup.GetFileBackup(getFileBackup.version);
-                return Results.File(filePath);
+                var filePath = backup.GetFileBackup(getFileBackup.version, out var downloadVersion);
+                return Results.File(filePath, fileDownloadName: downloadVersion);
             }
             return Results.NotFound();
         }
@@ -123,7 +123,5 @@ namespace SqlSyncLib.Workers
             }
         }
     }
-
-    public record GetFileBackupRequest(string version, string dbId);
 
 }
