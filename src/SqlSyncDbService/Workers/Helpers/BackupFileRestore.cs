@@ -7,12 +7,23 @@ namespace SqlSyncDbService.Workers.Helpers
         protected abstract BackupDatabaseBase BackupDatabase { get; }
         public async Task<bool> RestoreAsync(IWorkerConfig workerConfig, string pathFileZip)
         {
-            var sqlConnectString = workerConfig.SqlConnectString ?? throw new ArgumentNullException(workerConfig.SqlConnectString);
-            var tmp = Path.GetTempFileName();
-            using var file = new FileStream(tmp, FileMode.Create);
-            var fs = FileRestoreFactory.GetStreamData(pathFileZip);
-            fs.CopyTo(file);
-            return await BackupDatabase.RestoreBackupAsync(sqlConnectString, tmp);
+            var dir = Path.GetDirectoryName(pathFileZip) ?? "BackupFileRestore";
+            if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+            var tmp = Path.Combine(dir, Guid.NewGuid().ToString());
+            try
+            {
+                var sqlConnectString = workerConfig.SqlConnectString ?? throw new ArgumentNullException(workerConfig.SqlConnectString);
+                FileRestoreFactory.SaveStreamData(pathFileZip, tmp);
+                return await BackupDatabase.RestoreBackupAsync(sqlConnectString, tmp);
+            }
+            catch (Exception)
+            {
+                throw;
+            }
+            finally
+            {
+                if (File.Exists(tmp)) File.Delete(tmp);
+            }
         }
     }
 }

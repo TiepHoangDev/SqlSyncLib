@@ -21,7 +21,8 @@ namespace SqlSyncDbService.Workers.Helpers
         public virtual async Task<bool> CreateBackupAsync(string sqlConnectString, string pathFile)
         {
             var dbName = new SqlConnectionStringBuilder(sqlConnectString).InitialCatalog;
-            var query = GetQueryBackup(dbName, pathFile);
+            var fullPath = Path.GetFullPath(pathFile);
+            var query = GetQueryBackup(dbName, fullPath);
             var backupSuccess = await ApplyAsync(sqlConnectString, query);
             return backupSuccess;
         }
@@ -31,7 +32,8 @@ namespace SqlSyncDbService.Workers.Helpers
         public virtual async Task<bool> RestoreBackupAsync(string sqlConnectString, string pathFile)
         {
             var dbName = new SqlConnectionStringBuilder(sqlConnectString).InitialCatalog;
-            var query = GetQueryRestore(dbName, pathFile);
+            var fullPath = Path.GetFullPath(pathFile);
+            var query = GetQueryRestore(dbName, fullPath);
             var backupSuccess = await ApplyAsync(sqlConnectString, query);
             return backupSuccess;
         }

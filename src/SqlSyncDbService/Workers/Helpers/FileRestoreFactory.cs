@@ -14,7 +14,7 @@ namespace SqlSyncDbService.Workers.Helpers
 
         public static async Task<IFileRestore> GetFileRestoreAsync(string pathFileZip)
         {
-            using var zip = ZipFile.Open(pathFileZip, ZipArchiveMode.Create);
+            using var zip = ZipFile.Open(pathFileZip, ZipArchiveMode.Read);
             var headerEntry = zip.GetEntry(HeaderEntryName) ?? throw new Exception($"File not correct format: Not have {HeaderEntryName}");
             var json = await new StreamReader(headerEntry.Open()).ReadToEndAsync();
             var header = JsonSerializer.Deserialize<HeaderFile>(json) ?? throw new NullReferenceException(nameof(HeaderFile));
@@ -25,11 +25,11 @@ namespace SqlSyncDbService.Workers.Helpers
             return instance as IFileRestore ?? throw new NullReferenceException(nameof(instance));
         }
 
-        public static Stream GetStreamData(string pathFileZip)
+        public static void SaveStreamData(string pathFileZip, string file)
         {
-            using var zip = ZipFile.Open(pathFileZip, ZipArchiveMode.Create);
+            using var zip = ZipFile.Open(pathFileZip, ZipArchiveMode.Read);
             var dataEntry = zip.GetEntry(DataEntryName) ?? throw new Exception($"File not correct format: Not have {DataEntryName}");
-            return dataEntry.Open();
+            dataEntry.ExtractToFile(file, true);
         }
 
         protected virtual void AppendData(ZipArchive zip, FileStream data_fs)

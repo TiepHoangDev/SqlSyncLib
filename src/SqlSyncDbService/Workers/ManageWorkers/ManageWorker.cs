@@ -1,14 +1,11 @@
 ﻿using Azure.Core;
-using Microsoft.AspNetCore.Mvc;
 using SqlSyncDbService.Workers.Interfaces;
-using SqlSyncLib.Workers.BackupWorkers;
 using System.Reflection;
 using System.Text.Json;
 
 namespace SqlSyncDbService.Workers.ManageWorkers
 {
-    [ApiController, Route("ManageWorker")]
-    public class ManageWorker : ControllerBase, IManageWorker
+    public class ManageWorker : IManageWorker
     {
         private readonly Dictionary<string, ManageWorkerItem> Workers = new Dictionary<string, ManageWorkerItem>();
         private TaskCompletionSource<bool>? _taskCompletionSource;
@@ -22,7 +19,6 @@ namespace SqlSyncDbService.Workers.ManageWorkers
             }
         }
 
-        [NonAction]
         public bool RemoveWorker(Func<IWorker, bool> workerSelector)
         {
             var workers = Workers.Values.Where(q => workerSelector.Invoke(q.worker)).ToList();
@@ -34,7 +30,6 @@ namespace SqlSyncDbService.Workers.ManageWorkers
             return workers.Any();
         }
 
-        [NonAction]
         public bool AddWorker(IWorker worker)
         {
             var cancellation = _tokenSource?.Token ?? throw new Exception("Please call RunAsync first");
@@ -51,7 +46,6 @@ namespace SqlSyncDbService.Workers.ManageWorkers
             return true;
         }
 
-        [NonAction]
         public async Task<bool> RunAsync(CancellationToken cancellationToken)
         {
             _taskCompletionSource = new TaskCompletionSource<bool>();
@@ -60,7 +54,6 @@ namespace SqlSyncDbService.Workers.ManageWorkers
             return await _taskCompletionSource.Task;
         }
 
-        [NonAction]
         public void Dispose()
         {
             foreach (var item in Workers)
@@ -72,56 +65,38 @@ namespace SqlSyncDbService.Workers.ManageWorkers
             _taskCompletionSource?.SetResult(true);
         }
 
-        [HttpGet, Route("GetWorkers")]
-        public List<IWorker> GetWorkers(List<string>? ids)
+        public List<IWorker> GetWorkers(List<string>? ids = null)
         {
             return Workers.Values
-                .Where(q => ids?.Contains(q.worker.Id) ?? true)
+                .Where(q => ids?.Any() != true || ids.Contains(q.worker.Id))
                 .Select(q => q.worker).ToList();
         }
 
-        [HttpPost, Route("RemoveWorker")]
         public bool RemoveWorker(string id)
         {
             return RemoveWorker(q => q.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         }
 
-
-        [HttpGet, Route(GetNewBackupRequest.router)]
-        public IResult GetFileBackup([FromQuery] GetNewBackupRequest getFileBackup)
-        {
-            var workers = GetWorkers(new List<string> { getFileBackup.dbId });
-            var worker = workers.FirstOrDefault();
-            if (worker is BackupWorker backup)
-            {
-                var filePath = backup.GetFileBackup(getFileBackup.version, out var downloadVersion);
-                return Results.File(filePath, fileDownloadName: downloadVersion);
-            }
-            return Results.NotFound();
-        }
-
-        [NonAction]
-        public void MapEndPoint(MapEndPointInput input)
-        {
-            //AddWorker
-            var type = typeof(IWorker);
-            var classWorkers = AppDomain.CurrentDomain.GetAssemblies()
-                .SelectMany(q => q.GetTypes())
-                .Where(q => type.IsAssignableFrom(q))
-                .Where(q => q.IsClass && !q.IsAbstract)
-                .ToList();
-            foreach (var classWorker in classWorkers)
-            {
-                var name = classWorker.Name;
-                var endpoint = $"/AddWorker/{name}";
-                input.routeBuilder.MapPost(endpoint, (string workerJson) =>
-                {
-                    var data = JsonSerializer.Deserialize(workerJson, classWorker);
-                    var worker = data as IWorker ?? throw new Exception($"Can not parse data to type {name}");
-                    return AddWorker(worker);
-                }).WithTags(nameof(ManageWorker));
-            }
-        }
+        //public virtual void MapEndPoint(MapEndPointInput input)
+        //{
+        //    //AddWorker
+        //    var type = typeof(IWorker);
+        //    var classWorkers = AppDomain.CurrentDomain.GetAssemblies()
+        //        .SelectMany(q => q.GetTypes())
+        //        .Where(q => type.IsAssignableFrom(q))
+        //        .Where(q => q.IsClass && !q.IsAbstract)
+        //        .ToList();
+        //    foreach (var classWorker in classWorkers)
+        //    {
+        //        var name = classWorker.Name;
+        //        var endpoint = $"/AddWorker/{name}";
+        //        input.routeBuilder.MapPost(endpoint, (string workerJson) =>
+        //        {
+        //            var data = JsonSerializer.Deserialize(workerJson, classWorker);
+        //            var worker = data as IWorker ?? throw new Exception($"Can not parse data to type {name}");
+        //            return AddWorker(worker);
+        //        }).WithTags(nameof(ManageWorker));
+        //    }
+        //}
     }
-
 }

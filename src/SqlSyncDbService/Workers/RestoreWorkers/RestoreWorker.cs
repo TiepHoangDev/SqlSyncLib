@@ -11,28 +11,20 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
         public override IWorkerConfig Config => RestoreConfig;
         public RestoreWorkerConfig RestoreConfig { get; set; } = new RestoreWorkerConfig();
         public RestoreWorkerState RestoreState { get; set; } = new RestoreWorkerState();
+        public override IWorkerState State => RestoreState;
 
         public override async Task<bool> RunAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                try
+                await State.UpdateStateByProcess(async () =>
                 {
-                    RestoreConfig.LastRun = DateTime.Now;
-
                     //download file
                     await DownloadNewBackup();
-                    CallHookAsync("RestoreWorker_Download_File", RestoreConfig);
-
                     //Restore
                     await Restore();
-                    CallHookAsync("RestoreWorker_Restore", RestoreConfig);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex);
-                    CallHookAsync("RestoreWorker_Exception", ex);
-                }
+                });
+                CallHookAsync("RestoreWorker", RestoreState);
 
                 if (cancellationToken.IsCancellationRequested) break;
                 await Task.Delay(RestoreConfig.DelayTime, cancellationToken);
@@ -43,6 +35,8 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
         private async Task Restore()
         {
             var file = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
+            if (!File.Exists(file)) return;
+
             var restore = await FileRestoreFactory.GetFileRestoreAsync(file);
             await restore.RestoreAsync(RestoreConfig, file);
         }
@@ -54,9 +48,9 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
                 throw new ArgumentNullException(nameof(RestoreConfig.BackupAddress));
             }
 
-            if (string.IsNullOrWhiteSpace(RestoreConfig.dbId))
+            if (string.IsNullOrWhiteSpace(RestoreConfig.IdBackupWorker))
             {
-                throw new ArgumentNullException(nameof(RestoreConfig.dbId));
+                throw new ArgumentNullException(nameof(RestoreConfig.IdBackupWorker));
             }
 
             var filePath = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
@@ -67,29 +61,34 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
                 BaseAddress = new Uri(RestoreConfig.BackupAddress),
             };
 
-            var request = new GetNewBackupRequest(RestoreConfig.dbId)
+            var request = new GetNewBackupRequest(RestoreConfig.IdBackupWorker)
             {
-                version = RestoreState.CurrentVersion
+                currentVersion = RestoreState.CurrentVersion
             };
             using var response = await client.PostAsJsonAsync(GetNewBackupRequest.router, request);
             if (!response.IsSuccessStatusCode)
             {
                 var body = await response.Content.ReadAsStringAsync();
-                throw new Exception($"{response.RequestMessage?.RequestUri} => {response.StatusCode}. {body}");
+                throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. {body}");
             }
 
-            if (response.Headers.TryGetValues("content-disposition", out var values))
+            var filename = response.Content.Headers.ContentDisposition?.FileName;
+            if (string.IsNullOrWhiteSpace(filename))
             {
-                using var stream = await response.Content.ReadAsStreamAsync();
-                using var fs = new FileStream(filePath, FileMode.Create);
-                stream.CopyTo(fs);
-                fs.Flush();
-
-                if (RestoreState.CurrentVersion == null)
-                {
-                    RestoreState.CurrentVersion = values.FirstOrDefault();
-                }
+                throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. Unknow filename of response");
             }
+            if (RestoreState.CurrentVersion == null)
+            {
+                RestoreState.CurrentVersion = filename;
+                filePath = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
+            }
+
+            using var stream = await response.Content.ReadAsStreamAsync();
+            using var fs = new FileStream(filePath, FileMode.Create);
+            stream.CopyTo(fs);
+            fs.Flush();
+
+
         }
     }
 }

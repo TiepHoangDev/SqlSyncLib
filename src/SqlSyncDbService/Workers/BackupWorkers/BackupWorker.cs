@@ -9,17 +9,21 @@ namespace SqlSyncLib.Workers.BackupWorkers
     {
         public override string Name => $"BackupWorker-{BackupConfig.DbName}";
         public override IWorkerConfig Config => BackupConfig;
-        public BackupWorkerConfig BackupConfig { get; } = new BackupWorkerConfig();
+        public BackupWorkerConfig BackupConfig { get; set; } = new BackupWorkerConfig();
         public BackupWorkerState BackupState { get; } = new BackupWorkerState();
+
+        public override IWorkerState State => BackupState;
 
         public override async Task<bool> RunAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
                 //backup
-                try
+                await State.UpdateStateByProcess(async () =>
                 {
-                    if (BackupConfig.IsReset(DateTime.Now))
+                    var isExistbackupFull = BackupConfig.IsExistBackupFull(BackupState.MinVersion);
+
+                    if (!isExistbackupFull || BackupConfig.IsReset(DateTime.Now))
                     {
                         await BackupFullAsync();
                     }
@@ -27,13 +31,8 @@ namespace SqlSyncLib.Workers.BackupWorkers
                     {
                         await BackupLogAsync();
                     }
-                    CallHookAsync("BackupSuccess", BackupState);
-                }
-                catch (Exception ex)
-                {
-                    Debug.WriteLine(ex);
-                    CallHookAsync("BackupError", ex);
-                }
+                });
+                CallHookAsync("BackupSuccess", BackupState);
 
                 if (cancellationToken.IsCancellationRequested) break;
                 await Task.Delay(BackupConfig.DelayTime, cancellationToken);
@@ -51,18 +50,14 @@ namespace SqlSyncLib.Workers.BackupWorkers
             return await new BackupWorkerApi().BackupFull(BackupConfig, BackupState);
         }
 
-        public string GetFileBackup(string? versionToDownload, out string downloadVersion)
+        public string GetFileBackup(string versionToDownload)
         {
-            if (versionToDownload?.CompareTo(BackupState.CurrentVersion) > 0)
-                throw new Exception($"version={versionToDownload} is not valid. CurrentVersion is {BackupState.CurrentVersion}");
+            return BackupConfig.GetPathFile(BackupState.MinVersion, versionToDownload);
+        }
 
-            downloadVersion = versionToDownload ?? BackupState.MinVersion;
-            if (versionToDownload?.CompareTo(BackupState.MinVersion) < 0)
-            {
-                downloadVersion = BackupState.MinVersion;
-            }
-
-            return BackupConfig.GetPathFile(BackupState.MinVersion, downloadVersion);
+        public string GetNextVersion(string? currentVersion)
+        {
+            return BackupConfig.GetNextVersion(currentVersion, BackupState);
         }
     }
 

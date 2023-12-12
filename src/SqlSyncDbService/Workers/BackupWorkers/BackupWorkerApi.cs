@@ -13,31 +13,13 @@ namespace SqlSyncLib.Workers.BackupWorkers
             var currentVersion = VersionFactory.Instance.GetNewVersion();
             var dir = Path.Combine(backupConfig.PathFolder, currentVersion);
             if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
-            var pathFile = backupConfig.GetPathFile(currentVersion, currentVersion);
+            var pathFile = backupConfig.GetPathBackupFull(currentVersion);
 
             var success = await new FullBackupFileBackup().BackupAsync(backupConfig, pathFile);
 
             if (success)
             {
-                if (backupState.MinVersion != null)
-                {
-                    // delete old version
-                    var dirOld = Path.Combine(backupConfig.PathFolder, backupState.MinVersion);
-                    var files = Directory.GetFiles(dirOld);
-                    foreach (var file in files)
-                    {
-                        try
-                        {
-                            File.Delete(file);
-                        }
-                        catch (Exception ex)
-                        {
-                            Debug.WriteLine(ex);
-                        }
-                    }
-                    Directory.Delete(dirOld);
-                }
-
+                backupConfig.DeleteMinVersion(backupState.MinVersion);
                 backupState.MinVersion = currentVersion;
                 backupState.CurrentVersion = currentVersion;
             }

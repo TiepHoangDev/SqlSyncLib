@@ -2,8 +2,8 @@
 {
     public record GetNewBackupRequest(string dbId)
     {
-        public string? version { get; set; }
-        public const string router = "GetNewBackup";
+        public string? currentVersion { get; set; }
+        public const string router = "/GetNewBackup";
     }
 
 }

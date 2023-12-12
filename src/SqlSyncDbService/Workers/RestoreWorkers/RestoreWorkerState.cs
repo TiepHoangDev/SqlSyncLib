@@ -1,6 +1,9 @@
-﻿namespace SqlSyncDbService.Workers.RestoreWorkers
+﻿using SqlSyncDbService.Workers.Helpers;
+using SqlSyncDbService.Workers.Interfaces;
+
+namespace SqlSyncDbService.Workers.RestoreWorkers
 {
-    public class RestoreWorkerState
+    public record RestoreWorkerState : WorkerStateBase
     {
         public string? CurrentVersion { get; set; }
 

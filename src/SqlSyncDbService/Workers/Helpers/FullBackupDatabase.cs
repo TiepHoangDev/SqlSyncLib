@@ -1,4 +1,7 @@
-﻿namespace SqlSyncDbService.Workers.Helpers
+﻿using FastQueryLib;
+using Microsoft.Data.SqlClient;
+
+namespace SqlSyncDbService.Workers.Helpers
 {
     public class FullBackupDatabase : BackupDatabaseBase
     {
@@ -8,11 +11,52 @@
             return query;
         }
 
+        public override async Task<bool> RestoreBackupAsync(string sqlConnectString, string pathFile)
+        {
+            using var conn = new SqlConnection(sqlConnectString);
+            using var master_connection = conn.NewOpenConnectToDatabase("master");
+            var dbName = conn.Database;
+            var fullPath = Path.GetFullPath(pathFile);
+
+            var queryRestore = GetQueryRestore(dbName, fullPath);
+            var query = $"RESTORE FILELISTONLY FROM DISK = '{fullPath}';";
+            using var result = await master_connection.CreateFastQuery().WithQuery(query).ExecuteReadAsyncAs<RESTORE_FILELISTONLY_Record>();
+            if (result.Result.Any())
+            {
+                var getMoveQuery = (RESTORE_FILELISTONLY_Record filelistonly_record, string id) =>
+                {
+                    var extention = Path.GetExtension(filelistonly_record.PhysicalName) ?? throw new ArgumentNullException(nameof(filelistonly_record.PhysicalName));
+                    var dir = Path.GetDirectoryName(filelistonly_record.PhysicalName) ?? throw new ArgumentNullException(nameof(filelistonly_record.PhysicalName));
+                    var newPath = Path.Combine(dir, $"{dbName}_{id}{extention}");
+                    return $"MOVE N'{filelistonly_record.LogicalName}' TO N'{newPath}'";
+                };
+
+                var id = Guid.NewGuid().ToString("N");
+                var queryMoves = result.Result.Select(q => getMoveQuery(q, id)).ToList();
+                queryMoves.Insert(0, queryRestore);
+                queryRestore = string.Join(", ", queryMoves);
+            }
+
+            using var restore_dbcopy = await master_connection.CreateFastQuery()
+                .WithQuery(queryRestore)
+                .ExecuteNumberOfRowsAsync();
+            return true;
+        }
+
         protected override string GetQueryRestore(string dbName, string pathFile)
         {
-            var standby = $"{pathFile}.standby";
-            var query = $" RESTORE DATABASE [{dbName}] FROM DISK='{pathFile}' WITH REPLACE, STANDBY='{standby}'; ";
+            var dir = Path.GetDirectoryName(pathFile) ?? dbName;
+            var standby = Path.Combine(dir, $"{dbName}.standby");
+            var query = $" RESTORE DATABASE [{dbName}] FROM DISK='{pathFile}' WITH REPLACE, STANDBY='{standby}' ";
             return query;
+        }
+
+        record RESTORE_FILELISTONLY_Record
+        {
+            public string? LogicalName { get; set; }
+            public string? PhysicalName { get; set; }
+            public string? Type { get; set; }
+            public string? FileGroupName { get; set; }
         }
     }
 }

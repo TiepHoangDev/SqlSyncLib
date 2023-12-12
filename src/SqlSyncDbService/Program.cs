@@ -2,6 +2,8 @@ using Microsoft.AspNetCore.Antiforgery;
 using SqlSyncDbService.Services;
 using SqlSyncDbService.Workers.Interfaces;
 using SqlSyncDbService.Workers.ManageWorkers;
+using SqlSyncDbService.Workers.RestoreWorkers;
+using SqlSyncLib.Workers.BackupWorkers;
 using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -18,18 +20,46 @@ builder.Services.AddHostedService<ManageWorkerService>();
 var app = builder.Build();
 
 app.UseSwagger();
-app.UseSwaggerUI();
+app.UseSwaggerUI(options =>
+{
+    options.DisplayRequestDuration();
+    options.EnableTryItOutByDefault();
+    options.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+});
 app.UseDeveloperExceptionPage();
 app.MapControllers();
 
-app.MapGet("/", () => DateTime.Now);
+app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
 
-app.UseRouting();
-app.UseEndpoints(configure =>
+
+#if DEBUG
+_ = Task.Run(async () =>
 {
-    var input = new MapEndPointInput(configure);
-    app.Services.GetRequiredService<IManageWorker>().MapEndPoint(input);
-});
+    await Task.Delay(TimeSpan.FromSeconds(5));
 
+    var manage = app.Services.GetRequiredService<IManageWorker>();
+    var backup = new BackupWorker
+    {
+        BackupConfig = new BackupWorkerConfig
+        {
+            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A").ToString()
+        }
+    };
+    manage.AddWorker(backup);
+    manage.AddWorker(new RestoreWorker
+    {
+        RestoreConfig = new RestoreWorkerConfig
+        {
+            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A_copy").ToString(),
+            BackupAddress = "http://localhost:5000/",
+            IdBackupWorker = backup.Config.Id
+        }
+    });
+
+
+
+});
+#endif
 
 app.Run();
+

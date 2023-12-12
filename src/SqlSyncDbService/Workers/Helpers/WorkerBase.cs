@@ -9,9 +9,11 @@ namespace SqlSyncDbService.Workers.Helpers
             new LoggerWorkerHook()
         };
 
-        public virtual string Id => Name;
+        public virtual string Id => Config.Id;
         public abstract string Name { get; }
         public abstract IWorkerConfig Config { get; }
+        public abstract IWorkerState State { get; }
+
         public abstract Task<bool> RunAsync(CancellationToken cancellationToken);
 
         public virtual void Dispose()

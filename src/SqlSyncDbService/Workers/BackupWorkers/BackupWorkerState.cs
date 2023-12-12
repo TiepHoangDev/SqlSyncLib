@@ -1,9 +1,14 @@
-﻿namespace SqlSyncLib.Workers.BackupWorkers
+﻿using SqlSyncDbService.Workers.Helpers;
+using SqlSyncDbService.Workers.Interfaces;
+
+namespace SqlSyncLib.Workers.BackupWorkers
 {
-    public record BackupWorkerState()
+    public record BackupWorkerState : WorkerStateBase
     {
-        public string MinVersion { get; set; } = "no_min_version";
-        public string Id { get; set; } = "no_db_id";
+        public const string MinVersion_default = "no_min_version";
+
+        public string MinVersion { get; set; } = MinVersion_default;
         public string? CurrentVersion { get; set; }
+        public bool IsNoMinVersion => MinVersion == MinVersion_default;
     }
 }
