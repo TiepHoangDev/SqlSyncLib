@@ -34,6 +34,8 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
 
         private async Task Restore()
         {
+            if (RestoreState.CurrentVersion == null) return;
+
             var file = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
             if (!File.Exists(file)) return;
 
@@ -53,8 +55,11 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
                 throw new ArgumentNullException(nameof(RestoreConfig.IdBackupWorker));
             }
 
-            var filePath = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
-            if (File.Exists(filePath)) return;
+            if (RestoreState.CurrentVersion != null)
+            {
+                var filePath = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
+                if (File.Exists(filePath)) return;
+            }
 
             using var client = new HttpClient
             {
@@ -72,23 +77,20 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
                 throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. {body}");
             }
 
-            var filename = response.Content.Headers.ContentDisposition?.FileName;
-            if (string.IsNullOrWhiteSpace(filename))
+            var newVersion = response.Content.Headers.ContentDisposition?.FileName;
+            if (string.IsNullOrWhiteSpace(newVersion))
             {
                 throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. Unknow filename of response");
             }
             if (RestoreState.CurrentVersion == null)
             {
-                RestoreState.CurrentVersion = filename;
-                filePath = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
+                RestoreState.CurrentVersion = newVersion;
             }
-
+            var file = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
             using var stream = await response.Content.ReadAsStreamAsync();
-            using var fs = new FileStream(filePath, FileMode.Create);
+            using var fs = new FileStream(file, FileMode.Create);
             stream.CopyTo(fs);
             fs.Flush();
-
-
         }
     }
 }

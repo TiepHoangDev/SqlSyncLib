@@ -19,9 +19,17 @@ namespace SqlSyncLib.Workers.BackupWorkers
 
             if (success)
             {
+                //delete old version
                 backupConfig.DeleteMinVersion(backupState.MinVersion);
+
+                //save old version
+                backupState.NextVersion = currentVersion;
+                backupConfig.SaveState(backupState);
+
+                //update new version
                 backupState.MinVersion = currentVersion;
                 backupState.CurrentVersion = currentVersion;
+                backupState.NextVersion = null;
             }
 
             return success;
@@ -37,11 +45,17 @@ namespace SqlSyncLib.Workers.BackupWorkers
 
             var currentVersion = VersionFactory.Instance.GetNewVersion();
             var pathFile = backupConfig.GetPathFile(backupState.MinVersion, currentVersion);
-            var success = await new LogBackupDatabase().CreateBackupAsync(sqlConnectString, pathFile);
+            var success = await new LogBackupFileBackup().BackupAsync(backupConfig, pathFile);
 
             if (success)
             {
+                //save old version
+                backupState.NextVersion = currentVersion;
+                backupConfig.SaveState(backupState);
+
+                //update new version
                 backupState.CurrentVersion = currentVersion;
+                backupState.NextVersion = null;
             }
             return success;
         }

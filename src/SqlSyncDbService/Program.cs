@@ -42,7 +42,7 @@ _ = Task.Run(async () =>
     {
         BackupConfig = new BackupWorkerConfig
         {
-            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A").ToString()
+            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".\\SQLEXPRESS", "A").ToString()
         }
     };
     manage.AddWorker(backup);
@@ -50,7 +50,7 @@ _ = Task.Run(async () =>
     {
         RestoreConfig = new RestoreWorkerConfig
         {
-            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A_copy").ToString(),
+            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".\\SQLEXPRESS", "A_copy").ToString(),
             BackupAddress = "http://localhost:5000/",
             IdBackupWorker = backup.Config.Id
         }

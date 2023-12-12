@@ -9,6 +9,7 @@ namespace SqlSyncLib.Workers.BackupWorkers
 
         public string MinVersion { get; set; } = MinVersion_default;
         public string? CurrentVersion { get; set; }
+        public string? NextVersion { get; set; }
         public bool IsNoMinVersion => MinVersion == MinVersion_default;
     }
 }

@@ -4,7 +4,7 @@
     {
         protected override string GetQueryBackup(string dbName, string pathFile)
         {
-            var query = $" BACKUP LOG [{dbName}] TO DISK='{pathFile}' WITH FORMAT; ";
+            var query = $" ALTER DATABASE [{dbName}] SET RECOVERY FULL;  BACKUP LOG [{dbName}] TO DISK='{pathFile}' WITH FORMAT; ";
             return query;
         }
 

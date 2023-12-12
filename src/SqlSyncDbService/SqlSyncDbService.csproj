@@ -10,9 +10,4 @@
     <PackageReference Include="FastQueryLib" Version="2023.12.4.725" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
   </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\FastQueryLib\src\FastQueryLib\FastQueryLib.csproj" />
-  </ItemGroup>
-
 </Project>
