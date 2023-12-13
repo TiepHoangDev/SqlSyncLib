@@ -1,5 +1,6 @@
 ﻿using SqlSyncDbService.Workers.Interfaces;
 using SqlSyncDbService.Workers.LoggerWorkers;
+using System.Diagnostics;
 
 namespace SqlSyncDbService.Workers.Helpers
 {
@@ -18,7 +19,7 @@ namespace SqlSyncDbService.Workers.Helpers
 
         public virtual void Dispose()
         {
-
+            GC.SuppressFinalize(this);
         }
 
         protected virtual async void CallHookAsync(string name, object data)
@@ -27,6 +28,11 @@ namespace SqlSyncDbService.Workers.Helpers
             {
                 await item.PostData(name, data);
             }
+        }
+
+        protected virtual void _debug(string msg)
+        {
+            Debug.WriteLine($"\t{msg}");
         }
     }
 }

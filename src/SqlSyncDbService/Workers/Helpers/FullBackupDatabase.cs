@@ -7,7 +7,7 @@ namespace SqlSyncDbService.Workers.Helpers
     {
         protected override string GetQueryBackup(string dbName, string pathFile)
         {
-            var query = $" BACKUP DATABASE [{dbName}] TO DISK='{pathFile}' WITH FORMAT; ";
+            var query = $" ALTER DATABASE [{dbName}] SET RECOVERY FULL;  BACKUP DATABASE [{dbName}] TO DISK='{pathFile}' WITH FORMAT; ";
             return query;
         }
 
@@ -23,13 +23,13 @@ namespace SqlSyncDbService.Workers.Helpers
             using var result = await master_connection.CreateFastQuery().WithQuery(query).ExecuteReadAsyncAs<RESTORE_FILELISTONLY_Record>();
             if (result.Result.Any())
             {
-                var getMoveQuery = (RESTORE_FILELISTONLY_Record filelistonly_record, string id) =>
+                string getMoveQuery(RESTORE_FILELISTONLY_Record filelistonly_record, string id)
                 {
-                    var extention = Path.GetExtension(filelistonly_record.PhysicalName) ?? throw new ArgumentNullException(nameof(filelistonly_record.PhysicalName));
-                    var dir = Path.GetDirectoryName(filelistonly_record.PhysicalName) ?? throw new ArgumentNullException(nameof(filelistonly_record.PhysicalName));
+                    var extention = Path.GetExtension(filelistonly_record.PhysicalName) ?? throw new NullReferenceException(nameof(filelistonly_record.PhysicalName));
+                    var dir = Path.GetDirectoryName(filelistonly_record.PhysicalName) ?? throw new NullReferenceException(nameof(filelistonly_record.PhysicalName));
                     var newPath = Path.Combine(dir, $"{dbName}_{id}{extention}");
                     return $"MOVE N'{filelistonly_record.LogicalName}' TO N'{newPath}'";
-                };
+                }
 
                 var id = Guid.NewGuid().ToString("N");
                 var queryMoves = result.Result.Select(q => getMoveQuery(q, id)).ToList();

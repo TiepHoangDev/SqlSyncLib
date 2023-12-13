@@ -1,39 +1,24 @@
 ﻿using Microsoft.Data.SqlClient;
+using SqlSyncDbService.Workers.Helpers;
 using SqlSyncDbService.Workers.Interfaces;
+using SqlSyncLib.Workers.BackupWorkers;
 using System.Xml.Linq;
 
 namespace SqlSyncDbService.Workers.RestoreWorkers
 {
-    public class RestoreWorkerConfig : IWorkerConfig
+    public class RestoreWorkerConfig : WorkerConfigBase
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
         public string? IdBackupWorker { get; set; }
-        public TimeSpan DelayTime { get; set; } = TimeSpan.FromSeconds(8);
-        public string DbName = "";
         public string? BackupAddress { get; set; }
-        public string? PathFolder { get; set; } = "./data/DbName/restores";
-        private string? sqlConnectString;
-        public string? SqlConnectString
+        public int MaxFileDownload { get; set; } = 50;
+
+        public override void OnUpdateSqlConnectionString(string? newValue, string? oldValue)
         {
-            get => sqlConnectString;
-            set
-            {
-                sqlConnectString = value;
-                DbName = new SqlConnectionStringBuilder(sqlConnectString).InitialCatalog;
-                var pathFolder = Path.Combine("./data/", DbName, "restores");
-                PathFolder = Path.GetFullPath(pathFolder);
-            }
+            base.OnUpdateSqlConnectionString(newValue, oldValue);
+            DirData = Path.Combine(DirRoot, "restore");
         }
 
-        public string GetFilePath(string version, bool ensureFolder = true)
-        {
-            if (string.IsNullOrWhiteSpace(PathFolder))
-            {
-                throw new ArgumentNullException(nameof(PathFolder));
-            }
-            var path = Path.Combine(PathFolder, $"{version}.syncdb");
-            if (ensureFolder && !Directory.Exists(PathFolder)) Directory.CreateDirectory(PathFolder);
-            return Path.GetFullPath(path);
-        }
+        public RestoreWorkerState? GetStateByVersion(string version)
+            => base.GetStateByVersion<RestoreWorkerState>(version);
     }
 }

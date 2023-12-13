@@ -3,10 +3,8 @@ using SqlSyncDbService.Workers.Interfaces;
 
 namespace SqlSyncDbService.Workers.RestoreWorkers
 {
-    public record RestoreWorkerState : WorkerStateBase
+    public record RestoreWorkerState : WorkerStateVersionBase
     {
-        public string? CurrentVersion { get; set; }
-        public string? NextVersion { get; set; }
-
+        public string? DownloadedVersion { get; set; }
     }
 }

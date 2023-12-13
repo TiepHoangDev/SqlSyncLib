@@ -14,6 +14,8 @@ namespace SqlSyncLib.Workers.BackupWorkers
 
         public override IWorkerState State => BackupState;
 
+        protected override void _debug(string msg) => Debug.WriteLine($"\tRESTORE: {msg}");
+
         public override async Task<bool> RunAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
@@ -50,14 +52,30 @@ namespace SqlSyncLib.Workers.BackupWorkers
             return await new BackupWorkerApi().BackupFull(BackupConfig, BackupState);
         }
 
-        public string GetFileBackup(string versionToDownload)
+        public string? GetFileBackup(string? versionToDownload, out string? version)
         {
-            return BackupConfig.GetPathFile(BackupState.MinVersion, versionToDownload);
-        }
+            //check first download file
+            version = BackupState.MinVersion;
+            if (versionToDownload == null)
+            {
+                return BackupConfig.GetPathBackupFull(BackupState.MinVersion);
+            }
 
-        public string GetNextVersion(string? currentVersion)
-        {
-            return BackupConfig.GetNextVersion(currentVersion, BackupState);
+            //get state
+            var state = BackupConfig.GetStateByVersion(versionToDownload);
+
+            //check state not found
+            version = state?.NextVersion;
+            if (version == null) return default;
+
+            //check old version
+            if (version.CompareTo(BackupState.MinVersion) < 0)
+            {
+                return BackupConfig.GetPathBackupFull(BackupState.MinVersion);
+            }
+
+            //return next version
+            return BackupConfig.GetPathFile(BackupState.MinVersion, version);
         }
     }
 

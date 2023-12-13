@@ -1,8 +1,8 @@
 ﻿namespace SqlSyncDbService.Workers.ManageWorkers
 {
-    public record GetNewBackupRequest(string dbId)
+    public record GetNewBackupRequest(string DbId)
     {
-        public string? currentVersion { get; set; }
+        public string? CurrentVersion { get; set; }
         public const string router = "/GetNewBackup";
     }
 

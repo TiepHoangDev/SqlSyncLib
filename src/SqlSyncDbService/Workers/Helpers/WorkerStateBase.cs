@@ -1,4 +1,6 @@
-﻿using SqlSyncDbService.Workers.Interfaces;
+﻿using Microsoft.VisualBasic;
+using SqlSyncDbService.Workers.Interfaces;
+using System;
 using System.Diagnostics;
 
 namespace SqlSyncDbService.Workers.Helpers
@@ -20,7 +22,9 @@ namespace SqlSyncDbService.Workers.Helpers
             }
             catch (Exception ex)
             {
+                Debug.WriteLine("===========Exception==========");
                 Debug.WriteLine(ex);
+                Debug.WriteLine("===========Exception==========");
                 IsSuccess = false;
                 Message = ex.Message;
             }
@@ -29,5 +33,6 @@ namespace SqlSyncDbService.Workers.Helpers
                 LastRun = DateTime.Now;
             }
         }
+
     }
 }

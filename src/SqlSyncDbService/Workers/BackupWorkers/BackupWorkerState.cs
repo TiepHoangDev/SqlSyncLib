@@ -3,13 +3,17 @@ using SqlSyncDbService.Workers.Interfaces;
 
 namespace SqlSyncLib.Workers.BackupWorkers
 {
-    public record BackupWorkerState : WorkerStateBase
+    public record BackupWorkerState : WorkerStateVersionBase
     {
         public const string MinVersion_default = "no_min_version";
-
         public string MinVersion { get; set; } = MinVersion_default;
-        public string? CurrentVersion { get; set; }
-        public string? NextVersion { get; set; }
-        public bool IsNoMinVersion => MinVersion == MinVersion_default;
+
+        public override string? GetNextVersion<T>(string dir, string? currentVersion)
+        {
+            if (currentVersion == null) return MinVersion;
+            if (currentVersion.CompareTo(MinVersion) < 0) return MinVersion;
+            return base.GetNextVersion<T>(dir, currentVersion);
+        }
+
     }
 }

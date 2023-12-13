@@ -13,17 +13,14 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
         public RestoreWorkerState RestoreState { get; set; } = new RestoreWorkerState();
         public override IWorkerState State => RestoreState;
 
+        protected override void _debug(string msg) => Debug.WriteLine($"\tRESTORE: {msg}");
+
         public override async Task<bool> RunAsync(CancellationToken cancellationToken)
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                await State.UpdateStateByProcess(async () =>
-                {
-                    //download file
-                    await DownloadNewBackup();
-                    //Restore
-                    await Restore();
-                });
+                await State.UpdateStateByProcess(() => DownloadNewBackup(cancellationToken));
+                await State.UpdateStateByProcess(() => Restore(cancellationToken));
                 CallHookAsync("RestoreWorker", RestoreState);
 
                 if (cancellationToken.IsCancellationRequested) break;
@@ -32,65 +29,119 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
             return true;
         }
 
-        private async Task Restore()
+        private async Task Restore(CancellationToken cancellationToken)
         {
-            if (RestoreState.CurrentVersion == null) return;
+            while (!cancellationToken.IsCancellationRequested)
+            {
+                //get file
+                if (RestoreState.CurrentVersion == null) return;
+                var state = RestoreConfig.GetStateByVersion(RestoreState.CurrentVersion);
+                if (state?.CurrentVersion == null) return;
+                var file = RestoreConfig.GetFilePathData(state.CurrentVersion);
+                if (!File.Exists(file)) return;
 
-            var file = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
-            if (!File.Exists(file)) return;
+                //restore
+                var restore = await FileRestoreFactory.GetFileRestoreAsync(file);
+                var ok = await restore.RestoreAsync(RestoreConfig, file);
+                if (!ok)
+                {
+                    throw new Exception($"Restore file failed on {RestoreState}");
+                }
+                _debug($"success {RestoreState.CurrentVersion}");
 
-            var restore = await FileRestoreFactory.GetFileRestoreAsync(file);
-            await restore.RestoreAsync(RestoreConfig, file);
+                //update state
+                RestoreState.CurrentVersion = state.NextVersion;
+            }
         }
 
-        private async Task DownloadNewBackup()
+        /// <summary>
+        /// send current version
+        /// </summary>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="Exception"></exception>
+        private async Task DownloadNewBackup(CancellationToken cancellationToken)
         {
             if (string.IsNullOrWhiteSpace(RestoreConfig.BackupAddress))
             {
-                throw new ArgumentNullException(nameof(RestoreConfig.BackupAddress));
+                throw new NullReferenceException($"Please provider url server backup to conenect: {nameof(RestoreConfig.BackupAddress)}");
             }
 
             if (string.IsNullOrWhiteSpace(RestoreConfig.IdBackupWorker))
             {
-                throw new ArgumentNullException(nameof(RestoreConfig.IdBackupWorker));
+                throw new NullReferenceException($"Please provider id-backup-worker on server backup: {nameof(RestoreConfig.IdBackupWorker)}");
             }
 
-            if (RestoreState.CurrentVersion != null)
-            {
-                var filePath = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
-                if (File.Exists(filePath)) return;
-            }
+            //check init value: DownloadedVersion
+            RestoreState.DownloadedVersion = RestoreState.DownloadedVersion ?? RestoreState.CurrentVersion;
 
-            using var client = new HttpClient
+            var counter = 0;
+            while (!cancellationToken.IsCancellationRequested)
             {
-                BaseAddress = new Uri(RestoreConfig.BackupAddress),
-            };
+                //setup client
+                using var client = new HttpClient
+                {
+                    BaseAddress = new Uri(RestoreConfig.BackupAddress),
+                };
+                var request = new GetNewBackupRequest(RestoreConfig.IdBackupWorker)
+                {
+                    CurrentVersion = RestoreState.DownloadedVersion
+                };
+                using var response = await client.PostAsJsonAsync(GetNewBackupRequest.router, request, cancellationToken);
 
-            var request = new GetNewBackupRequest(RestoreConfig.IdBackupWorker)
-            {
-                currentVersion = RestoreState.CurrentVersion
-            };
-            using var response = await client.PostAsJsonAsync(GetNewBackupRequest.router, request);
-            if (!response.IsSuccessStatusCode)
-            {
-                var body = await response.Content.ReadAsStringAsync();
-                throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. {body}");
-            }
+                //check response
+                var body = await response.Content.ReadAsStringAsync(cancellationToken);
+                switch (response.StatusCode)
+                {
+                    case System.Net.HttpStatusCode.NoContent:
+                        _debug("not have new file backup");
+                        return;
+                    case System.Net.HttpStatusCode.OK:
+                        break;
+                    default:
+                        throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. {body}");
+                }
 
-            var newVersion = response.Content.Headers.ContentDisposition?.FileName;
-            if (string.IsNullOrWhiteSpace(newVersion))
-            {
-                throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. Unknow filename of response");
+                //get version
+                var version = response.Content.Headers.ContentDisposition?.FileName;
+                if (string.IsNullOrWhiteSpace(version))
+                {
+                    throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. Unknow filename(=version) of response, that is required of response.");
+                }
+
+                //save version for restore
+                RestoreConfig.SaveState(new WorkerStateVersionBase
+                {
+                    CurrentVersion = RestoreState.DownloadedVersion,
+                    NextVersion = version,
+                });
+                _debug($"{RestoreState.DownloadedVersion} => {version}");
+
+                //update state
+                RestoreState.DownloadedVersion = version;
+                RestoreState.CurrentVersion = RestoreState.CurrentVersion ?? version;
+
+                //save file
+                var file = RestoreConfig.GetFilePathData(RestoreState.DownloadedVersion);
+                using var stream = await response.Content.ReadAsStreamAsync(cancellationToken);
+                using var fs = new FileStream(file, FileMode.Create);
+                await stream.CopyToAsync(fs, cancellationToken);
+                await fs.FlushAsync(cancellationToken);
+
+                //check limit
+                if (RestoreConfig.MaxFileDownload > 0)
+                {
+                    counter++;
+                    if (counter >= RestoreConfig.MaxFileDownload)
+                    {
+                        break;
+                    }
+                }
+
+                //sleep
+                await Task.Delay(500, cancellationToken);
             }
-            if (RestoreState.CurrentVersion == null)
-            {
-                RestoreState.CurrentVersion = newVersion;
-            }
-            var file = RestoreConfig.GetFilePath(RestoreState.CurrentVersion);
-            using var stream = await response.Content.ReadAsStreamAsync();
-            using var fs = new FileStream(file, FileMode.Create);
-            stream.CopyTo(fs);
-            fs.Flush();
         }
+
     }
 }

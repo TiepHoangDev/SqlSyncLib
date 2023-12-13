@@ -31,19 +31,19 @@ namespace SqlSyncDbService.Workers.ManageWorkers
         [HttpPost, Route(GetNewBackupRequest.router)]
         public IActionResult GetNewBackup(GetNewBackupRequest getFileBackup)
         {
-            var workers = GetWorkers(new List<string> { getFileBackup.dbId });
+            var workers = GetWorkers(new List<string> { getFileBackup.DbId });
             var worker = workers.FirstOrDefault();
             if (worker is BackupWorker backup)
             {
-                var nextVersion = backup.GetNextVersion(getFileBackup.currentVersion);
-                var filePath = backup.GetFileBackup(nextVersion);
-                if (System.IO.File.Exists(filePath))
+                var filePath = backup.GetFileBackup(getFileBackup.CurrentVersion, out var version);
+                if (filePath != null && System.IO.File.Exists(filePath))
                 {
                     var fs = System.IO.File.OpenRead(filePath);
-                    return File(fs, "application/octet-stream", nextVersion);
+                    return File(fs, "application/octet-stream", version);
                 }
+                return NoContent();
             }
-            return NotFound();
+            return BadRequest();
         }
 
         [NonAction]
