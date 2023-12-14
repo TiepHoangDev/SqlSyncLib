@@ -34,16 +34,17 @@ public class ManageWorkerServiceTests
 
         Mock<IRestoreDownload> mock = new();
         mock.Setup(d => d.DownloadFileAsync(It.IsAny<RestoreWorkerConfig>(), It.IsAny<RestoreWorkerState>(), It.IsAny<CancellationToken>()))
-            .Returns(async (RestoreWorkerConfig config, RestoreWorkerState state, CancellationToken c) =>
+            .Returns((RestoreWorkerConfig config, RestoreWorkerState state, CancellationToken c) =>
             {
                 var src = _backup.GetFileBackup(state.DownloadedVersion, out var version);
                 TestContext.WriteLine($"DownloadFileAsync: {state.DownloadedVersion} => {version}");
-                if (src == null || version == null) return version;
-
-                var file = config.GetFilePathData(version);
-                File.Copy(src, file);
-                TestContext.WriteLine($"DownloadFileAsync File.Copy {src} => {file}");
-                return version;
+                if (src != null && version != null)
+                {
+                    var file = config.GetFilePathData(version);
+                    File.Copy(src, file);
+                    TestContext.WriteLine($"DownloadFileAsync File.Copy {src} => {file}");
+                }
+                return Task.FromResult(version);
             });
 
         _restore = new RestoreWorker
