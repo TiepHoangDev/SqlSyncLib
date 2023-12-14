@@ -4,7 +4,7 @@ namespace SqlSyncDbService.Services
 {
     public class ManageWorkerService : BackgroundService
     {
-        private IManageWorker _manageWorker;
+        private readonly IManageWorker _manageWorker;
 
         public ManageWorkerService(IManageWorker manageWorker)
         {

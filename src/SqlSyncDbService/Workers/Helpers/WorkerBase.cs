@@ -30,7 +30,7 @@ namespace SqlSyncDbService.Workers.Helpers
             }
         }
 
-        protected virtual void _debug(string msg)
+        protected virtual void WriteLine(string msg)
         {
             Debug.WriteLine($"\t{msg}");
         }

@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Identity.Client;
 using Microsoft.Net.Http.Headers;
 using SqlSyncDbService.Workers.Interfaces;
+using System.Diagnostics.Metrics;
 using System.Reflection;
 
 namespace SqlSyncDbService.Workers.Helpers
@@ -14,8 +15,9 @@ namespace SqlSyncDbService.Workers.Helpers
             using var conn = new SqlConnection(sqlConnectString);
             var dbName = conn.Database;
             using var master = conn.NewOpenConnectToDatabase("master");
-            using var restoreJob = await master.CreateFastQuery().WithQuery(query).ExecuteNumberOfRowsAsync();
-            return await master.CheckDatabaseExistsAsync(dbName);
+            using var restoreJob = await master.CreateFastQuery().WithQuery(query).ExecuteNonQueryAsync();
+            await master.CheckDatabaseExistsAsync(dbName);
+            return true;
         }
 
         public virtual async Task<bool> CreateBackupAsync(string sqlConnectString, string pathFile)
@@ -33,11 +35,18 @@ namespace SqlSyncDbService.Workers.Helpers
         {
             var dbName = new SqlConnectionStringBuilder(sqlConnectString).InitialCatalog;
             var fullPath = Path.GetFullPath(pathFile);
-            var query = GetQueryRestore(dbName, fullPath);
+            var query = GetQueryRestore(dbName, fullPath, dbName);
             var backupSuccess = await ApplyAsync(sqlConnectString, query);
             return backupSuccess;
         }
 
-        protected abstract string GetQueryRestore(string dbName, string pathFile);
+        public string GetFileStandBy(string dbName, string pathFile, string minVersion)
+        {
+            var dir = Path.GetDirectoryName(pathFile) ?? dbName;
+            var path = Path.Combine(dir, $"{dbName}.{minVersion}.standby");
+            return Path.GetFullPath(path);
+        }
+
+        protected abstract string GetQueryRestore(string dbName, string pathFile, string minVersion);
     }
 }

@@ -1,10 +1,8 @@
-using Microsoft.AspNetCore.Antiforgery;
 using SqlSyncDbService.Services;
 using SqlSyncDbService.Workers.Interfaces;
 using SqlSyncDbService.Workers.ManageWorkers;
 using SqlSyncDbService.Workers.RestoreWorkers;
 using SqlSyncLib.Workers.BackupWorkers;
-using System.Diagnostics;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -57,8 +55,6 @@ _ = Task.Run(async () =>
             IdBackupWorker = backup.Config.Id
         }
     });
-
-
 
 });
 #endif

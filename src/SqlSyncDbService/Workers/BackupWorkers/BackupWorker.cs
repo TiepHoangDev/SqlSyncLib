@@ -14,7 +14,7 @@ namespace SqlSyncLib.Workers.BackupWorkers
 
         public override IWorkerState State => BackupState;
 
-        protected override void _debug(string msg) => Debug.WriteLine($"\tRESTORE: {msg}");
+        protected override void WriteLine(string msg) => Debug.WriteLine($"\tRESTORE: {msg}");
 
         public override async Task<bool> RunAsync(CancellationToken cancellationToken)
         {

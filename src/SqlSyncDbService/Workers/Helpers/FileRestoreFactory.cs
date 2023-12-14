@@ -21,7 +21,6 @@ namespace SqlSyncDbService.Workers.Helpers
             var header = JsonSerializer.Deserialize<HeaderFile>(json) ?? throw new NullReferenceException(nameof(HeaderFile));
 
             var type = typeof(IFileRestore).Assembly.GetType(header.ClassType) ?? throw new NullReferenceException(nameof(IFileRestore));
-            Debug.WriteLine($"{header.ClassType} >> {type}");
 
             var instance = Activator.CreateInstance(type);
             return instance as IFileRestore ?? throw new NullReferenceException(nameof(instance));

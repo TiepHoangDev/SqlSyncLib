@@ -8,10 +8,10 @@
             return query;
         }
 
-        protected override string GetQueryRestore(string dbName, string pathFile)
+        protected override string GetQueryRestore(string dbName, string pathFile, string minVersion)
         {
-            var standby = $"{pathFile}.standby";
-            var query = $" RESTORE LOG [{dbName}] FROM DISK='{pathFile}' WITH REPLACE, STANDBY='{standby}'; ";
+            var standby = GetFileStandBy(dbName, pathFile, minVersion);
+            var query = $" RESTORE LOG [{dbName}] FROM DISK='{pathFile}' WITH STANDBY='{standby}'; ";
             return query;
         }
     }

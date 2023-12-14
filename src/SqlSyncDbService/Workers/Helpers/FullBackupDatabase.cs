@@ -18,7 +18,8 @@ namespace SqlSyncDbService.Workers.Helpers
             var dbName = conn.Database;
             var fullPath = Path.GetFullPath(pathFile);
 
-            var queryRestore = GetQueryRestore(dbName, fullPath);
+            var minVersion = dbName; // VersionFactory.Instance.GetNewVersion();
+            var queryRestore = GetQueryRestore(dbName, fullPath, minVersion);
             var query = $"RESTORE FILELISTONLY FROM DISK = '{fullPath}';";
             using var result = await master_connection.CreateFastQuery().WithQuery(query).ExecuteReadAsyncAs<RESTORE_FILELISTONLY_Record>();
             if (result.Result.Any())
@@ -31,7 +32,7 @@ namespace SqlSyncDbService.Workers.Helpers
                     return $"MOVE N'{filelistonly_record.LogicalName}' TO N'{newPath}'";
                 }
 
-                var id = Guid.NewGuid().ToString("N");
+                var id = VersionFactory.Instance.GetNewVersion();
                 var queryMoves = result.Result.Select(q => getMoveQuery(q, id)).ToList();
                 queryMoves.Insert(0, queryRestore);
                 queryRestore = string.Join(", ", queryMoves);
@@ -39,14 +40,14 @@ namespace SqlSyncDbService.Workers.Helpers
 
             using var restore_dbcopy = await master_connection.CreateFastQuery()
                 .WithQuery(queryRestore)
-                .ExecuteNumberOfRowsAsync();
+                .ExecuteNonQueryAsync();
             return true;
         }
 
-        protected override string GetQueryRestore(string dbName, string pathFile)
+        protected override string GetQueryRestore(string dbName, string pathFile, string version)
         {
             var dir = Path.GetDirectoryName(pathFile) ?? dbName;
-            var standby = Path.Combine(dir, $"{dbName}.standby");
+            var standby = Path.Combine(dir, $"{dbName}-{version}.standby");
             var query = $" RESTORE DATABASE [{dbName}] FROM DISK='{pathFile}' WITH REPLACE, STANDBY='{standby}' ";
             return query;
         }

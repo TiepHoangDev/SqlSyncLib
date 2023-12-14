@@ -10,7 +10,7 @@ namespace SqlSyncDbService.Workers.Helpers
         {
             var sqlConnectString = workerConfig.SqlConnectString ?? throw new ArgumentNullException(workerConfig.SqlConnectString);
             var tmpFile = Path.GetDirectoryName(pathFileZip);
-            tmpFile = Path.Combine(tmpFile ?? pathFileZip, Guid.NewGuid().ToString());
+            tmpFile = Path.Combine(tmpFile ?? pathFileZip, VersionFactory.Instance.GetNewVersion());
 
             if (!await BackupDatabase.CreateBackupAsync(sqlConnectString, tmpFile))
             {

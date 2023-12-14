@@ -7,25 +7,26 @@ namespace SqlSyncDbService.Workers.ManageWorkers
 {
     public class ManageWorker : IManageWorker
     {
-        private readonly Dictionary<string, ManageWorkerItem> Workers = new Dictionary<string, ManageWorkerItem>();
+        private readonly Dictionary<string, ManageWorkerItem> Workers = new();
         private TaskCompletionSource<bool>? _taskCompletionSource;
         private CancellationTokenSource? _tokenSource;
 
-        record ManageWorkerItem(IWorker worker, CancellationTokenSource TokenSource) : IDisposable
+        record ManageWorkerItem(IWorker Worker, CancellationTokenSource TokenSource) : IDisposable
         {
             public void Dispose()
             {
                 if (TokenSource.Token.CanBeCanceled) TokenSource.Cancel();
+                GC.SuppressFinalize(this);
             }
         }
 
         public bool RemoveWorker(Func<IWorker, bool> workerSelector)
         {
-            var workers = Workers.Values.Where(q => workerSelector.Invoke(q.worker)).ToList();
+            var workers = Workers.Values.Where(q => workerSelector.Invoke(q.Worker)).ToList();
             foreach (var item in workers)
             {
                 item.Dispose();
-                Workers.Remove(item.worker.Id);
+                Workers.Remove(item.Worker.Id);
             }
             return workers.Any();
         }
@@ -63,13 +64,15 @@ namespace SqlSyncDbService.Workers.ManageWorkers
             Workers.Clear();
 
             _taskCompletionSource?.SetResult(true);
+
+            GC.SuppressFinalize(this);
         }
 
         public List<IWorker> GetWorkers(List<string>? ids = null)
         {
             return Workers.Values
-                .Where(q => ids?.Any() != true || ids.Contains(q.worker.Id))
-                .Select(q => q.worker).ToList();
+                .Where(q => ids?.Any() != true || ids.Contains(q.Worker.Id))
+                .Select(q => q.Worker).ToList();
         }
 
         public bool RemoveWorker(string id)

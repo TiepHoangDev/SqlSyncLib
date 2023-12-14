@@ -10,9 +10,11 @@ namespace SqlSyncDbService.Workers.Helpers
 
         public virtual bool SaveState(string pathFile)
         {
-            if (NextVersion == null) return false;
             if (CurrentVersion == null) return false;
-            var json = JsonSerializer.Serialize(this);
+            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
             File.WriteAllText(pathFile, json);
             return true;
         }

@@ -5,7 +5,7 @@ namespace SqlSyncDbService.Workers.Interfaces
 {
     public abstract class WorkerConfigBase : IWorkerConfig
     {
-        public virtual string Id { get; set; } = Guid.NewGuid().ToString();
+        public virtual string Id { get; set; } = VersionFactory.Instance.GetNewVersion();
 
         public virtual TimeSpan DelayTime { get; set; } = TimeSpan.FromSeconds(8);
 

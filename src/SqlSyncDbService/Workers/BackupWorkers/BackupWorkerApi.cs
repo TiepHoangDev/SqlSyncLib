@@ -1,7 +1,8 @@
 ﻿using FastQueryLib;
 using SqlSyncDbService.Workers.Helpers;
-using SqlSyncLib.LogicBase;
+using System.Data.Common;
 using System.Diagnostics;
+using System.Diagnostics.Metrics;
 
 namespace SqlSyncLib.Workers.BackupWorkers
 {
@@ -24,13 +25,32 @@ namespace SqlSyncLib.Workers.BackupWorkers
             var pathFileLogBackUp = backupConfig.GetPathFile(newVersion, newVersion);
 
             // set READ_ONLY => backup log => backup full => set READ_WRITE.
-            var queryReadOnLy = $"ALTER DATABASE {backupConfig.DbName} SET READ_ONLY;";
-            var queryReadWrite = $"ALTER DATABASE {backupConfig.DbName} SET READ_WRITE;";
-            var master = SqlServerExecuterHelper.CreateConnection(sqlConnectString).NewOpenConnectToDatabase("master");
+            var isReadOnly = await SqlServerExecuterHelper.CreateConnection(sqlConnectString)
+                .CreateFastQuery().IsReadOnlyAsync();
             try
             {
-                await master.CreateFastQuery().WithQuery(queryReadOnLy).ExecuteNumberOfRowsAsync();
-                await new LogBackupFileBackup().BackupAsync(backupConfig, pathFileLogBackUp);
+                if (!isReadOnly)
+                {
+                    using var master = SqlServerExecuterHelper.CreateConnection(sqlConnectString);
+                    var _sourceToken = new CancellationTokenSource(TimeSpan.FromMinutes(3));
+                    while (!_sourceToken.IsCancellationRequested)
+                    {
+                        var connecttionOnWorking = await master.CreateFastQuery().CountNumberConnecttionOnDatabase();
+                        if (connecttionOnWorking <= 1)
+                        {
+                            //set Backup log
+                            await new LogBackupFileBackup().BackupAsync(backupConfig, pathFileLogBackUp);
+
+                            //set Read-OnLy
+                            await master.CreateFastQuery().SetDatabaseReadOnly(true);
+                            break;
+                        }
+                        Debug.WriteLine($"Database {backupConfig.DbName} have {connecttionOnWorking} connect are working. Wait 100s for all done. Max wait 3m.");
+                        await Task.Delay(100, _sourceToken.Token);
+                    }
+                }
+
+                //set Backup full
                 success = await new FullBackupFileBackup().BackupAsync(backupConfig, pathFileFullBackUp);
             }
             catch
@@ -39,7 +59,11 @@ namespace SqlSyncLib.Workers.BackupWorkers
             }
             finally
             {
-                await master.CreateFastQuery().WithQuery(queryReadWrite).ExecuteNumberOfRowsAsync();
+                //set Read-Write
+                if (!isReadOnly)
+                {
+                    await SqlServerExecuterHelper.CreateConnection(sqlConnectString).CreateFastQuery().SetDatabaseReadOnly(false);
+                }
             }
 
             if (success)
@@ -55,6 +79,7 @@ namespace SqlSyncLib.Workers.BackupWorkers
                 backupState.CurrentVersion = newVersion;
                 backupState.MinVersion = newVersion;
                 backupState.NextVersion = null;
+                backupConfig.SaveState(backupState);
 
                 Debug.WriteLine("\tBackupFull success");
             }
@@ -80,6 +105,7 @@ namespace SqlSyncLib.Workers.BackupWorkers
                 //update new version
                 backupState.CurrentVersion = currentVersion;
                 backupState.NextVersion = null;
+                backupConfig.SaveState(backupState);
             }
             return success;
         }

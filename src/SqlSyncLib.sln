@@ -5,6 +5,10 @@ VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSyncDbService", "SqlSyncDbService\SqlSyncDbService.csproj", "{EB563CC0-426B-489C-AACD-9B7A1C8B308E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSyncDbService.Tests", "SqlSyncDbService.Tests\SqlSyncDbService.Tests.csproj", "{8A21E07D-9AC2-43A1-BF62-3EB538FA5653}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FastQueryLib", "..\..\FastQueryLib\src\FastQueryLib\FastQueryLib.csproj", "{49B2860F-181F-4363-8B44-44E50624C85E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -15,6 +19,14 @@ Global
 		{EB563CC0-426B-489C-AACD-9B7A1C8B308E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EB563CC0-426B-489C-AACD-9B7A1C8B308E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EB563CC0-426B-489C-AACD-9B7A1C8B308E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8A21E07D-9AC2-43A1-BF62-3EB538FA5653}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8A21E07D-9AC2-43A1-BF62-3EB538FA5653}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8A21E07D-9AC2-43A1-BF62-3EB538FA5653}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8A21E07D-9AC2-43A1-BF62-3EB538FA5653}.Release|Any CPU.Build.0 = Release|Any CPU
+		{49B2860F-181F-4363-8B44-44E50624C85E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{49B2860F-181F-4363-8B44-44E50624C85E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{49B2860F-181F-4363-8B44-44E50624C85E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{49B2860F-181F-4363-8B44-44E50624C85E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
