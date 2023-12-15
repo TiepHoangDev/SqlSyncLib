@@ -1,4 +1,5 @@
 ﻿using SqlSyncDbService.Workers.Interfaces;
+using SqlSyncLib.Workers.BackupWorkers;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Text.Json;
@@ -7,7 +8,7 @@ namespace SqlSyncDbService.Workers.Helpers
 {
     public abstract class FileRestoreFactory
     {
-        public record HeaderFile(string ClassType);
+        public record HeaderFile(string ClassType, BackupWorkerState WorkerState);
         public const string HeaderEntryName = "header.json";
         private const string DataEntryName = "data.dat";
 
@@ -33,6 +34,15 @@ namespace SqlSyncDbService.Workers.Helpers
             dataEntry.ExtractToFile(file, true);
         }
 
+        public static HeaderFile? GetHeaderFile(string pathFileZip)
+        {
+            using var zip = ZipFile.Open(pathFileZip, ZipArchiveMode.Read);
+            var entry = zip.GetEntry(HeaderEntryName);
+            if (entry == null) return default;
+            var json = new StreamReader(entry.Open()).ReadToEnd();
+            return JsonSerializer.Deserialize<HeaderFile>(json);
+        }
+
         protected virtual void AppendData(ZipArchive zip, FileStream data_fs)
         {
             using var fs = zip.CreateEntry(DataEntryName).Open();
@@ -48,5 +58,6 @@ namespace SqlSyncDbService.Workers.Helpers
             writer.Write(json);
             writer.Flush();
         }
+
     }
 }

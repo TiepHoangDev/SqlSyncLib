@@ -4,7 +4,7 @@ namespace SqlSyncDbService.Workers.Helpers
 {
     public abstract class BackupFileRestore : IFileRestore
     {
-        public abstract string Name {get;}
+        public abstract string Name { get; }
 
         protected abstract BackupDatabaseBase BackupDatabase { get; }
         public async Task<bool> RestoreAsync(IWorkerConfig workerConfig, string pathFileZip)
@@ -14,9 +14,14 @@ namespace SqlSyncDbService.Workers.Helpers
             var tmp = Path.Combine(dir, VersionFactory.Instance.GetNewVersion());
             try
             {
-                var sqlConnectString = workerConfig.SqlConnectString ?? throw new ArgumentNullException(workerConfig.SqlConnectString);
+                var sqlConnectString = workerConfig.SqlConnectString
+                    ?? throw new ArgumentNullException(workerConfig.SqlConnectString, $"Please config {nameof(workerConfig.SqlConnectString)} for {nameof(workerConfig)}");
+                var header = FileRestoreFactory.GetHeaderFile(pathFileZip);
+                var minVersion = header?.WorkerState.MinVersion
+                    ?? throw new ArgumentNullException(header?.WorkerState.MinVersion, $"File not have {header?.WorkerState.MinVersion}, not valid file for restore. {pathFileZip}");
+
                 FileRestoreFactory.SaveStreamData(pathFileZip, tmp);
-                return await BackupDatabase.RestoreBackupAsync(sqlConnectString, tmp);
+                return await BackupDatabase.RestoreBackupAsync(sqlConnectString, tmp, minVersion);
             }
             catch (Exception)
             {
@@ -24,7 +29,9 @@ namespace SqlSyncDbService.Workers.Helpers
             }
             finally
             {
+#if DEBUG0
                 if (File.Exists(tmp)) File.Delete(tmp);
+#endif
             }
         }
     }

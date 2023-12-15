@@ -66,59 +66,61 @@ public class ManageWorkerServiceTests
     {
         var ok = false;
 
-        using var source = SqlServerExecuterHelper.CreateConnection(_backup.Config.SqlConnectString!);
-        using var destination = SqlServerExecuterHelper.CreateConnection(_restore.Config.SqlConnectString!);
+        FastQuery source() => SqlServerExecuterHelper.CreateConnection(_backup.Config.SqlConnectString!).CreateFastQuery();
+        FastQuery destination() => SqlServerExecuterHelper.CreateConnection(_restore.Config.SqlConnectString!).CreateFastQuery();
 
-        async Task CheckCount(SqlConnection conn, int expected)
+        async Task CheckCount(FastQuery fast, int expected)
         {
-            var row = await conn.CreateFastQuery()
-               .WithQuery("select Count(1) from Products;")
-               .ExecuteScalarAsync<int>();
-            Assert.That(row, Is.EqualTo(expected));
+            using var row = await fast.WithQuery("select Count(1) from Products;")
+                 .ExecuteScalarAsync<int>();
+            Assert.That(row.Result, Is.EqualTo(expected));
         }
 
-        async Task InsertRow(SqlConnection conn)
+        async Task InsertRow(FastQuery fast)
         {
-            using var a = await conn.CreateFastQuery()
+            using var a = await fast
                  .WithQuery("insert into Products (CreateTime) values(GETDATE())")
                  .ExecuteNonQueryAsync();
         }
 
-        await source.CreateFastQuery().SetDatabaseReadOnly(false);
+        await source().SetDatabaseReadOnly(false);
         //delete data
-        using var _ = await source.CreateFastQuery().WithQuery("DELETE Products").ExecuteNonQueryAsync();
+        using var _ = await source().WithQuery("DELETE Products").ExecuteNonQueryAsync();
 
         //FULL
-        await InsertRow(source);
-        await CheckCount(source, 1);
+        await InsertRow(source());
+        await CheckCount(source(), 1);
         ok = await _backup.BackupFullAsync(); Assert.That(ok, Is.True);
 
         //LOG
-        await InsertRow(source);
-        await CheckCount(source, 2);
+        await InsertRow(source());
+        await CheckCount(source(), 2);
         ok = await _backup.BackupLogAsync(); Assert.That(ok, Is.True);
 
         //LOG
-        await InsertRow(source);
-        await CheckCount(source, 3);
+        await InsertRow(source());
+        await CheckCount(source(), 3);
         ok = await _backup.BackupLogAsync(); Assert.That(ok, Is.True);
 
         //Restore
         await _restore.DownloadNewBackupAsync(_tokenSource.Token);
         await _restore.RestoreAsync(_tokenSource.Token);
-        await CheckCount(destination, 3);
+        await CheckCount(destination(), 3);
 
         //LOG
-        await InsertRow(source);
-        await CheckCount(source, 4);
+        await InsertRow(source());
+        await CheckCount(source(), 4);
         ok = await _backup.BackupLogAsync(); Assert.That(ok, Is.True);
 
         //Restore
         await _restore.DownloadNewBackupAsync(_tokenSource.Token);
         await _restore.RestoreAsync(_tokenSource.Token);
-        await CheckCount(destination, 4);
+        await CheckCount(destination(), 4);
 
-        Assert.Throws<Exception>(async () => await _restore.DownloadNewBackupAsync(_tokenSource.Token));
+        //Restore
+        await _restore.DownloadNewBackupAsync(_tokenSource.Token);
+        await _restore.RestoreAsync(_tokenSource.Token);
+        await CheckCount(destination(), 4);
     }
 
     [OneTimeTearDown]

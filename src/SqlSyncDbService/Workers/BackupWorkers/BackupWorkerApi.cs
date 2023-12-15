@@ -25,11 +25,11 @@ namespace SqlSyncLib.Workers.BackupWorkers
             var pathFileLogBackUp = backupConfig.GetPathFile(newVersion, newVersion);
 
             // set READ_ONLY => backup log => backup full => set READ_WRITE.
-            var isReadOnly = await SqlServerExecuterHelper.CreateConnection(sqlConnectString)
+            bool isReadOnly = await SqlServerExecuterHelper.CreateConnection(sqlConnectString)
                 .CreateFastQuery().IsReadOnlyAsync();
             try
             {
-                if (!isReadOnly)
+                if (isReadOnly)
                 {
                     using var master = SqlServerExecuterHelper.CreateConnection(sqlConnectString);
                     var _sourceToken = new CancellationTokenSource(TimeSpan.FromMinutes(3));
@@ -39,7 +39,7 @@ namespace SqlSyncLib.Workers.BackupWorkers
                         if (connecttionOnWorking <= 1)
                         {
                             //set Backup log
-                            await new LogBackupFileBackup().BackupAsync(backupConfig, pathFileLogBackUp);
+                            await new LogBackupFileBackup(backupState).BackupAsync(backupConfig, pathFileLogBackUp);
 
                             //set Read-OnLy
                             await master.CreateFastQuery().SetDatabaseReadOnly(true);
@@ -51,7 +51,7 @@ namespace SqlSyncLib.Workers.BackupWorkers
                 }
 
                 //set Backup full
-                success = await new FullBackupFileBackup().BackupAsync(backupConfig, pathFileFullBackUp);
+                success = await new FullBackupFileBackup(backupState).BackupAsync(backupConfig, pathFileFullBackUp);
             }
             catch
             {
@@ -94,7 +94,7 @@ namespace SqlSyncLib.Workers.BackupWorkers
 
             var currentVersion = VersionFactory.Instance.GetNewVersion();
             var pathFile = backupConfig.GetPathFile(backupState.MinVersion, currentVersion);
-            var success = await new LogBackupFileBackup().BackupAsync(backupConfig, pathFile);
+            var success = await new LogBackupFileBackup(backupState).BackupAsync(backupConfig, pathFile);
 
             if (success)
             {

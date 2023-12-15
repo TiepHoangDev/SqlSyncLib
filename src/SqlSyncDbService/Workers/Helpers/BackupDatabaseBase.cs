@@ -14,9 +14,7 @@ namespace SqlSyncDbService.Workers.Helpers
         {
             using var conn = new SqlConnection(sqlConnectString);
             var dbName = conn.Database;
-            using var master = conn.NewOpenConnectToDatabase("master");
-            using var restoreJob = await master.CreateFastQuery().WithQuery(query).ExecuteNonQueryAsync();
-            await master.CheckDatabaseExistsAsync(dbName);
+            using var restoreJob = await conn.CreateFastQuery().WithQuery(query).ExecuteNonQueryAsync();
             return true;
         }
 
@@ -31,11 +29,11 @@ namespace SqlSyncDbService.Workers.Helpers
 
         protected abstract string GetQueryBackup(string dbName, string pathFile);
 
-        public virtual async Task<bool> RestoreBackupAsync(string sqlConnectString, string pathFile)
+        public virtual async Task<bool> RestoreBackupAsync(string sqlConnectString, string pathFile, string minVersion)
         {
             var dbName = new SqlConnectionStringBuilder(sqlConnectString).InitialCatalog;
             var fullPath = Path.GetFullPath(pathFile);
-            var query = GetQueryRestore(dbName, fullPath, dbName);
+            var query = GetQueryRestore(dbName, fullPath, minVersion);
             var backupSuccess = await ApplyAsync(sqlConnectString, query);
             return backupSuccess;
         }
