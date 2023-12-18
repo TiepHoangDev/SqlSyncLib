@@ -1,4 +1,6 @@
-﻿using FastQueryLib;
+﻿using DotNet.Testcontainers.Builders;
+using DotNet.Testcontainers.Containers;
+using FastQueryLib;
 using Microsoft.Data.SqlClient;
 using Moq;
 using SqlSyncDbService.Workers.Interfaces;
@@ -14,20 +16,53 @@ public class ManageWorkerServiceTests
     private CancellationTokenSource _tokenSource;
     private BackupWorker _backup;
     private RestoreWorker _restore;
+    private IContainer _container;
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
         Trace.Listeners.Add(new ConsoleTraceListener());
 
         _tokenSource = new CancellationTokenSource();
 
+        var server = "localhost";
+        var port = 2000;
+        var username = "sa";
+        var pass = "dev@1234";
+        var database = "A";
+
+        //create sql
+        _container = new ContainerBuilder()
+           .WithImage("mcr.microsoft.com/mssql/server")
+           .WithPortBinding(1433, true)
+           .WithEnvironment("ACCEPT_EULA", "Y")
+           .WithEnvironment("SQLCMDUSER", username)
+           .WithEnvironment("SQLCMDPASSWORD", pass)
+           .WithEnvironment("MSSQL_SA_PASSWORD", pass)
+           .WithVolumeMount("sql_test", "/var/opt/mssql/data")
+           .WithWaitStrategy(Wait.ForUnixContainer().UntilContainerIsHealthy())
+           .Build();
+
+        await _container.StartAsync(_tokenSource.Token);
+        port = _container.GetMappedPublicPort(1433);
+        server = $"{_container.Hostname},{port}";
+
+        var conn = SqlServerExecuterHelper.CreateConnectionString(server, database, username, pass).ToString();
+        Console.WriteLine(conn);
+
+        if (!await new SqlConnection(conn).CreateFastQuery().CheckDatabaseExistsAsync())
+        {
+            using var faster = new SqlConnection(conn).CreateFastQuery().UseDatabase("master");
+            await faster.WithQuery($@"create database {database};").ExecuteNonQueryAsync();
+            await faster.WithQuery($@"use {database}; create table Products ( ID int primary key identity, CreateTime datetime );").ExecuteNonQueryAsync();
+        }
+
+        //setup project
         _backup = new BackupWorker
         {
             BackupConfig = new BackupWorkerConfig
             {
-                //SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".\\SQLEXPRESS", "A").ToString()
-                SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A", "dev", "1").ToString()
+                SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(server, database, username, pass).ToString()
             }
         };
         if (Directory.Exists(_backup.BackupConfig.DirRoot)) Directory.Delete(_backup.BackupConfig.DirRoot, true);
@@ -51,8 +86,7 @@ public class ManageWorkerServiceTests
         {
             RestoreConfig = new RestoreWorkerConfig
             {
-                //SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".\\SQLEXPRESS", "A_copy").ToString(),
-                SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A_copy", "dev", "1").ToString(),
+                SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(server, database + "_copy", username, pass).ToString(),
                 BackupAddress = "http://localhost:5000/",
                 IdBackupWorker = _backup.Config.Id,
             },
@@ -64,8 +98,6 @@ public class ManageWorkerServiceTests
     [Test]
     public async Task Backup()
     {
-        var ok = false;
-
         FastQuery source() => SqlServerExecuterHelper.CreateConnection(_backup.Config.SqlConnectString!).CreateFastQuery();
         FastQuery destination() => SqlServerExecuterHelper.CreateConnection(_restore.Config.SqlConnectString!).CreateFastQuery();
 
@@ -84,13 +116,13 @@ public class ManageWorkerServiceTests
         }
 
         await source().SetDatabaseReadOnly(false);
-        //delete data
-        using var _ = await source().WithQuery("DELETE Products").ExecuteNonQueryAsync();
+        _ = await source().WithQuery("DELETE Products").ExecuteNonQueryAsync();
 
         //FULL
         await InsertRow(source());
         await CheckCount(source(), 1);
-        ok = await _backup.BackupFullAsync(); Assert.That(ok, Is.True);
+        bool ok = await _backup.BackupFullAsync();
+        Assert.That(ok, Is.True);
 
         //LOG
         await InsertRow(source());
@@ -127,6 +159,7 @@ public class ManageWorkerServiceTests
     public void TearDown()
     {
         _tokenSource.Cancel();
+        //await _container.DisposeAsync();
         Trace.Flush();
     }
 
