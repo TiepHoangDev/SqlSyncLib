@@ -31,18 +31,18 @@ namespace SqlSyncLib.Workers.BackupWorkers
             {
                 if (isReadOnly)
                 {
-                    using var master = SqlServerExecuterHelper.CreateConnection(sqlConnectString);
+                    using var dbConnection = SqlServerExecuterHelper.CreateConnection(sqlConnectString);
                     var _sourceToken = new CancellationTokenSource(TimeSpan.FromMinutes(3));
                     while (!_sourceToken.IsCancellationRequested)
                     {
-                        var connecttionOnWorking = await master.CreateFastQuery().CountNumberConnecttionOnDatabase();
+                        var connecttionOnWorking = await dbConnection.CreateFastQuery().CountNumberConnecttionOnDatabase();
                         if (connecttionOnWorking <= 1)
                         {
                             //set Backup log
                             await new LogBackupFileBackup(backupState).BackupAsync(backupConfig, pathFileLogBackUp);
 
                             //set Read-OnLy
-                            await master.CreateFastQuery().SetDatabaseReadOnly(true);
+                            await dbConnection.CreateFastQuery().SetDatabaseReadOnly(true);
                             break;
                         }
                         Debug.WriteLine($"Database {backupConfig.DbName} have {connecttionOnWorking} connect are working. Wait 100s for all done. Max wait 3m.");

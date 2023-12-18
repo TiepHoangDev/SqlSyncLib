@@ -15,6 +15,12 @@ public class ManageWorkerServiceTests
     private BackupWorker _backup;
     private RestoreWorker _restore;
 
+#if DEBUG0
+    string SERVER = ".\\SQLEXPRESS";
+#else
+    string SERVER = ".";
+#endif
+
     [OneTimeSetUp]
     public void Setup()
     {
@@ -26,8 +32,7 @@ public class ManageWorkerServiceTests
         {
             BackupConfig = new BackupWorkerConfig
             {
-                //SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".\\SQLEXPRESS", "A").ToString()
-                SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A", "dev", "1").ToString()
+                SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(SERVER, "A").ToString()
             }
         };
         if (Directory.Exists(_backup.BackupConfig.DirRoot)) Directory.Delete(_backup.BackupConfig.DirRoot, true);
@@ -51,8 +56,7 @@ public class ManageWorkerServiceTests
         {
             RestoreConfig = new RestoreWorkerConfig
             {
-                //SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".\\SQLEXPRESS", "A_copy").ToString(),
-                SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A_copy", "dev", "1").ToString(),
+                SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(SERVER, "A_copy").ToString(),
                 BackupAddress = "http://localhost:5000/",
                 IdBackupWorker = _backup.Config.Id,
             },
@@ -64,8 +68,6 @@ public class ManageWorkerServiceTests
     [Test]
     public async Task Backup()
     {
-        var ok = false;
-
         FastQuery source() => SqlServerExecuterHelper.CreateConnection(_backup.Config.SqlConnectString!).CreateFastQuery();
         FastQuery destination() => SqlServerExecuterHelper.CreateConnection(_restore.Config.SqlConnectString!).CreateFastQuery();
 
@@ -82,45 +84,53 @@ public class ManageWorkerServiceTests
                  .WithQuery("insert into Products (CreateTime) values(GETDATE())")
                  .ExecuteNonQueryAsync();
         }
+        {
+            using var a1 = await source().SetDatabaseReadOnly(false);
+        }
+        {
+            using var a2 = await source().WithQuery("DELETE Products").ExecuteNonQueryAsync();
+        }
 
-        await source().SetDatabaseReadOnly(false);
-        //delete data
-        using var _ = await source().WithQuery("DELETE Products").ExecuteNonQueryAsync();
+        var row = 0;
 
-        //FULL
-        await InsertRow(source());
-        await CheckCount(source(), 1);
-        ok = await _backup.BackupFullAsync(); Assert.That(ok, Is.True);
+        for (int i = 0; i < 3; i++)
+        {
+            //FULL
+            await InsertRow(source());
+            await CheckCount(source(), ++row);
+            bool ok = await _backup.BackupFullAsync();
+            Assert.That(ok, Is.True);
 
-        //LOG
-        await InsertRow(source());
-        await CheckCount(source(), 2);
-        ok = await _backup.BackupLogAsync(); Assert.That(ok, Is.True);
+            //LOG
+            await InsertRow(source());
+            await CheckCount(source(), ++row);
+            ok = await _backup.BackupLogAsync(); Assert.That(ok, Is.True);
 
-        //LOG
-        await InsertRow(source());
-        await CheckCount(source(), 3);
-        ok = await _backup.BackupLogAsync(); Assert.That(ok, Is.True);
+            //LOG
+            await InsertRow(source());
+            await CheckCount(source(), ++row);
+            ok = await _backup.BackupLogAsync(); Assert.That(ok, Is.True);
 
-        //Restore
-        await _restore.DownloadNewBackupAsync(_tokenSource.Token);
-        await _restore.RestoreAsync(_tokenSource.Token);
-        await CheckCount(destination(), 3);
+            //Restore
+            await _restore.DownloadNewBackupAsync(_tokenSource.Token);
+            await _restore.RestoreAsync(_tokenSource.Token);
+            await CheckCount(destination(), row);
 
-        //LOG
-        await InsertRow(source());
-        await CheckCount(source(), 4);
-        ok = await _backup.BackupLogAsync(); Assert.That(ok, Is.True);
+            //LOG
+            await InsertRow(source());
+            await CheckCount(source(), ++row);
+            ok = await _backup.BackupLogAsync(); Assert.That(ok, Is.True);
 
-        //Restore
-        await _restore.DownloadNewBackupAsync(_tokenSource.Token);
-        await _restore.RestoreAsync(_tokenSource.Token);
-        await CheckCount(destination(), 4);
+            //Restore
+            await _restore.DownloadNewBackupAsync(_tokenSource.Token);
+            await _restore.RestoreAsync(_tokenSource.Token);
+            await CheckCount(destination(), row);
 
-        //Restore
-        await _restore.DownloadNewBackupAsync(_tokenSource.Token);
-        await _restore.RestoreAsync(_tokenSource.Token);
-        await CheckCount(destination(), 4);
+            //Restore
+            await _restore.DownloadNewBackupAsync(_tokenSource.Token);
+            await _restore.RestoreAsync(_tokenSource.Token);
+            await CheckCount(destination(), row);
+        }
     }
 
     [OneTimeTearDown]

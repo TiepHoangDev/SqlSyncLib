@@ -6,6 +6,7 @@ namespace SqlSyncDbService.Workers.Helpers
     public abstract class BackupFileBackup : FileRestoreFactory, IFileBackup
     {
         protected abstract BackupDatabaseBase BackupDatabase { get; }
+
         public virtual async Task<bool> BackupAsync(IWorkerConfig workerConfig, string pathFileZip)
         {
             var sqlConnectString = workerConfig.SqlConnectString ?? throw new ArgumentNullException(workerConfig.SqlConnectString);
