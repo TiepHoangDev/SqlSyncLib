@@ -8,6 +8,10 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
 {
     public class RestoreWorker : WorkerBase
     {
+        public RestoreWorker(ILogger? logger = null) : base(logger)
+        {
+        }
+
         public override string Name => "RestoreWorker";
         public override IWorkerConfig Config => RestoreConfig;
         public RestoreWorkerConfig RestoreConfig { get; set; } = new RestoreWorkerConfig();

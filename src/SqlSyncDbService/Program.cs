@@ -6,6 +6,21 @@ using SqlSyncLib.Workers.BackupWorkers;
 
 var builder = WebApplication.CreateBuilder(args);
 
+//logging
+//https://github.com/nreco/logging
+builder.Services.AddLogging(loggingBuilder =>
+{
+    loggingBuilder.AddConsole();
+    loggingBuilder.AddFile("{0}", fileLoggerOpts =>
+    {
+        fileLoggerOpts.FormatLogFileName = fName =>
+        {
+            return $"logs/{DateTime.UtcNow:yyyy/MM/dd}.log.txt";
+        };
+    });
+});
+
+//config URLs
 builder.WebHost.UseUrls("http://*:5000;");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
@@ -41,7 +56,8 @@ _ = Task.Run(async () =>
     await Task.Delay(TimeSpan.FromSeconds(5));
 
     var manage = app.Services.GetRequiredService<IManageWorker>();
-    var backup = new BackupWorker
+    var logger = app.Logger;
+    var backup = new BackupWorker(logger)
     {
         BackupConfig = new BackupWorkerConfig
         {
@@ -50,7 +66,7 @@ _ = Task.Run(async () =>
         }
     };
     manage.AddWorker(backup);
-    manage.AddWorker(new RestoreWorker
+    manage.AddWorker(new RestoreWorker(logger)
     {
         RestoreConfig = new RestoreWorkerConfig
         {

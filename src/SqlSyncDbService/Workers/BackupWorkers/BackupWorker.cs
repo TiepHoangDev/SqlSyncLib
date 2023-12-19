@@ -7,6 +7,10 @@ namespace SqlSyncLib.Workers.BackupWorkers
 {
     public class BackupWorker : WorkerBase
     {
+        public BackupWorker(ILogger? logger = null) : base(logger)
+        {
+        }
+
         public override string Name => $"BackupWorker-{BackupConfig.DbName}";
         public override IWorkerConfig Config => BackupConfig;
         public BackupWorkerConfig BackupConfig { get; set; } = new BackupWorkerConfig();

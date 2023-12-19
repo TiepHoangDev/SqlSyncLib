@@ -9,11 +9,13 @@ namespace SqlSyncDbService.Workers.ManageWorkers
     [ApiController, Route("ManageWorker")]
     public class ManageWorkerController : ControllerBase
     {
+        readonly ILogger logger;
         private readonly IManageWorker _manageWorker;
 
-        public ManageWorkerController(IManageWorker manageWorker)
+        public ManageWorkerController(IManageWorker manageWorker, ILogger<ManageWorkerController> logger)
         {
             _manageWorker = manageWorker;
+            this.logger = logger;
         }
 
         [HttpPost, Route("GetWorkers")]
@@ -59,7 +61,7 @@ namespace SqlSyncDbService.Workers.ManageWorkers
         [HttpPost, Route("[action]")]
         public virtual List<IWorker>? AddBackupWorker(BackupWorkerConfig config)
         {
-            var worker = new BackupWorker
+            var worker = new BackupWorker(logger)
             {
                 BackupConfig = config,
             };
@@ -69,7 +71,7 @@ namespace SqlSyncDbService.Workers.ManageWorkers
         [HttpPost, Route("[action]")]
         public virtual List<IWorker>? AddRestoreWorker(RestoreWorkerConfig config)
         {
-            var worker = new RestoreWorker
+            var worker = new RestoreWorker(logger)
             {
                 RestoreConfig = config,
             };
