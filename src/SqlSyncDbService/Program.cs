@@ -32,6 +32,12 @@ app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
 #if DEBUG
 _ = Task.Run(async () =>
 {
+#if true
+    var server = ".";
+#else
+    var server = ".\\SQLEXPRESS";
+#endif
+
     await Task.Delay(TimeSpan.FromSeconds(5));
 
     var manage = app.Services.GetRequiredService<IManageWorker>();
@@ -39,8 +45,8 @@ _ = Task.Run(async () =>
     {
         BackupConfig = new BackupWorkerConfig
         {
-            //SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".\\SQLEXPRESS", "A").ToString()
-            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A").ToString()
+            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(server, "A").ToString(),
+            DelayTime = TimeSpan.FromSeconds(5)
         }
     };
     manage.AddWorker(backup);
@@ -48,11 +54,11 @@ _ = Task.Run(async () =>
     {
         RestoreConfig = new RestoreWorkerConfig
         {
-            //SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".\\SQLEXPRESS", "A_copy").ToString(),
-            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(".", "A_copy").ToString(),
+            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(server, "A_copy").ToString(),
             BackupAddress = "http://localhost:5000/",
-            IdBackupWorker = backup.Config.Id
-        }
+            IdBackupWorker = backup.Config.Id,
+            DelayTime = TimeSpan.FromSeconds(5)
+        },
     });
 
 });

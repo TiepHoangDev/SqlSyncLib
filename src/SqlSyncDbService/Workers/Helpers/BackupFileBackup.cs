@@ -1,4 +1,5 @@
-﻿using SqlSyncDbService.Workers.Interfaces;
+﻿using Microsoft.Data.SqlClient;
+using SqlSyncDbService.Workers.Interfaces;
 using System.IO.Compression;
 
 namespace SqlSyncDbService.Workers.Helpers
@@ -7,13 +8,12 @@ namespace SqlSyncDbService.Workers.Helpers
     {
         protected abstract BackupDatabaseBase BackupDatabase { get; }
 
-        public virtual async Task<bool> BackupAsync(IWorkerConfig workerConfig, string pathFileZip)
+        public virtual async Task<bool> BackupAsync(SqlConnection sqlConnection, string pathFileZip)
         {
-            var sqlConnectString = workerConfig.SqlConnectString ?? throw new ArgumentNullException(workerConfig.SqlConnectString);
             var tmpFile = Path.GetDirectoryName(pathFileZip);
             tmpFile = Path.Combine(tmpFile ?? pathFileZip, VersionFactory.Instance.GetNewVersion());
 
-            if (!await BackupDatabase.CreateBackupAsync(sqlConnectString, tmpFile))
+            if (!await BackupDatabase.CreateBackupAsync(sqlConnection, tmpFile))
             {
                 throw new Exception("Create backup fail!");
             }

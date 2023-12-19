@@ -8,7 +8,7 @@ namespace SqlSyncDbService.Workers.Helpers
     {
         protected override string GetQueryBackup(string dbName, string pathFile)
         {
-            var query = $"USE master; BACKUP LOG [{dbName}] TO DISK='{pathFile}' WITH FORMAT; ";
+            var query = $"USE master; BACKUP LOG [{dbName}] TO DISK='{pathFile}' WITH FORMAT; Use [{dbName}]; ";
             return query;
         }
 
@@ -19,44 +19,19 @@ namespace SqlSyncDbService.Workers.Helpers
             return query;
         }
 
-        public override async Task<bool> RestoreBackupAsync(string sqlConnectString, string pathFile, string minVersion)
+        public override async Task<bool> RestoreBackupAsync(SqlConnection sqlConnection, string pathFile, string minVersion)
         {
-            var builder = new SqlConnectionStringBuilder(sqlConnectString);
-            var dbName = builder.InitialCatalog;
-            var setToMultiUser = false;
-            try
+            var dbName = sqlConnection.Database;
+            using var faster = sqlConnection.CreateFastQuery();
+            await faster.UseSingleUserModeAsync(async f =>
             {
-                using (var faster = builder.CreateOpenConnection().CreateFastQuery())
-                {
-                    if (!await faster.IsDatabaseSingleUserAsync())
-                    {
-                        //set signle user
-                        setToMultiUser = true;
-                        await faster.Clear().SetDatabaseSingleUserAsync(true);
-                    }
-                }
-                //restore log
                 var fullPath = Path.GetFullPath(pathFile);
                 var queryRestore = GetQueryRestore(dbName, fullPath, minVersion);
-                using var restore = await builder.CreateOpenConnection().CreateFastQuery()
-                    .WithQuery(queryRestore)
-                    .ExecuteNonQueryAsync();
-                return true;
-            }
-            catch
-            {
-                throw;
-            }
-            finally
-            {
-                if (setToMultiUser)
-                {
-                    //restore state
-                    using var _ = await builder.CreateOpenConnection()
-                        .CreateFastQuery()
-                        .SetDatabaseSingleUserAsync(false);
-                }
-            }
+                await sqlConnection.CreateFastQuery()
+                   .WithQuery(queryRestore)
+                   .ExecuteNonQueryAsync();
+            });
+            return true;
         }
     }
 }

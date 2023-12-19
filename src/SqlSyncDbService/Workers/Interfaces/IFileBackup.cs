@@ -1,7 +1,9 @@
-﻿namespace SqlSyncDbService.Workers.Interfaces
+﻿using Microsoft.Data.SqlClient;
+
+namespace SqlSyncDbService.Workers.Interfaces
 {
     public interface IFileBackup
     {
-        Task<bool> BackupAsync(IWorkerConfig workerConfig, string pathFileZip);
+        Task<bool> BackupAsync(SqlConnection sqlConnection, string pathFileZip);
     }
 }

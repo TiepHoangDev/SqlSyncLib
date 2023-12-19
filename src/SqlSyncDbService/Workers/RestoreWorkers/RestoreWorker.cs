@@ -1,4 +1,5 @@
-﻿using SqlSyncDbService.Workers.Helpers;
+﻿using Microsoft.Data.SqlClient;
+using SqlSyncDbService.Workers.Helpers;
 using SqlSyncDbService.Workers.Interfaces;
 using System.Diagnostics;
 using System.Threading;
@@ -43,7 +44,8 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
 
                 //restore
                 var restore = await FileRestoreFactory.GetFileRestoreAsync(file);
-                var ok = await restore.RestoreAsync(RestoreConfig, file);
+                using var dbConnection = new SqlConnection(RestoreConfig.SqlConnectString);
+                var ok = await restore.RestoreAsync(dbConnection, file);
                 if (!ok)
                 {
                     throw new Exception($"[{restore.Name}] Restore file failed on {RestoreState}");

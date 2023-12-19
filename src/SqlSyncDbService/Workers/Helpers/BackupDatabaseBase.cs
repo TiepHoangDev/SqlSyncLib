@@ -3,6 +3,7 @@ using Microsoft.Data.SqlClient;
 using Microsoft.Identity.Client;
 using Microsoft.Net.Http.Headers;
 using SqlSyncDbService.Workers.Interfaces;
+using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.Reflection;
 
@@ -10,32 +11,43 @@ namespace SqlSyncDbService.Workers.Helpers
 {
     public abstract class BackupDatabaseBase
     {
-        public virtual async Task<bool> ApplyAsync(string sqlConnectString, string query)
+        public virtual async Task<bool> CreateBackupAsync(SqlConnection sqlConnection, string pathFile)
         {
-            using var conn = new SqlConnection(sqlConnectString);
-            var dbName = conn.Database;
-            using var restoreJob = await conn.CreateFastQuery().WithQuery(query).ExecuteNonQueryAsync();
-            return true;
-        }
+            var dbName = sqlConnection.Database;
 
-        public virtual async Task<bool> CreateBackupAsync(string sqlConnectString, string pathFile)
-        {
-            var dbName = new SqlConnectionStringBuilder(sqlConnectString).InitialCatalog;
+            //check database has backup full before
+            //USE msdb; SELECT TOP 1 1 FROM backupset WHERE database_name = 'C'
+            var hasBackupFull = await sqlConnection.CreateFastQuery()
+                .ThrowIfIsSystemDb()
+                .WithQuery($"USE msdb; SELECT TOP 1 1 FROM backupset WHERE database_name = '{dbName}'; USE {dbName}; ")
+                .ExecuteScalarAsync<int?>();
+            if (hasBackupFull != 1)
+            {
+                Debug.WriteLine("Database must backup full before Backup log.");
+                return false;
+            }
+
+            //backup log
             var fullPath = Path.GetFullPath(pathFile);
             var query = GetQueryBackup(dbName, fullPath);
-            var backupSuccess = await ApplyAsync(sqlConnectString, query);
-            return backupSuccess;
+            await sqlConnection.CreateFastQuery()
+               .ThrowIfIsSystemDb()
+               .WithQuery(query)
+               .ExecuteNonQueryAsync();
+            return true;
         }
 
         protected abstract string GetQueryBackup(string dbName, string pathFile);
 
-        public virtual async Task<bool> RestoreBackupAsync(string sqlConnectString, string pathFile, string minVersion)
+        public virtual async Task<bool> RestoreBackupAsync(SqlConnection sqlConnection, string pathFile, string minVersion)
         {
-            var dbName = new SqlConnectionStringBuilder(sqlConnectString).InitialCatalog;
+            var dbName = sqlConnection.Database;
             var fullPath = Path.GetFullPath(pathFile);
             var query = GetQueryRestore(dbName, fullPath, minVersion);
-            var backupSuccess = await ApplyAsync(sqlConnectString, query);
-            return backupSuccess;
+            await sqlConnection.CreateFastQuery()
+                .WithQuery(query)
+                .ExecuteNonQueryAsync();
+            return true;
         }
 
         public string GetFileStandBy(string dbName, string pathFile, string minVersion)

@@ -16,9 +16,9 @@ public class ManageWorkerServiceTests
     private RestoreWorker _restore;
 
 #if DEBUG0
-    string SERVER = ".\\SQLEXPRESS";
+    readonly string SERVER = ".\\SQLEXPRESS";
 #else
-    string SERVER = ".";
+    readonly string SERVER = ".";
 #endif
 
     [OneTimeSetUp]
