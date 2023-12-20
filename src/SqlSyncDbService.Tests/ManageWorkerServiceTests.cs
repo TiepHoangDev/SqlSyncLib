@@ -1,8 +1,5 @@
 ﻿using FastQueryLib;
-using Microsoft.Data.SqlClient;
 using Moq;
-using SqlSyncDbService.Workers.Interfaces;
-using SqlSyncDbService.Workers.ManageWorkers;
 using SqlSyncDbService.Workers.RestoreWorkers;
 using SqlSyncLib.Workers.BackupWorkers;
 using System.Diagnostics;

@@ -44,41 +44,5 @@ app.MapControllers();
 
 app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
 
-#if DEBUG
-_ = Task.Run(async () =>
-{
-#if true
-    var server = ".";
-#else
-    var server = ".\\SQLEXPRESS";
-#endif
-
-    await Task.Delay(TimeSpan.FromSeconds(5));
-
-    var manage = app.Services.GetRequiredService<IManageWorker>();
-    var logger = app.Logger;
-    var backup = new BackupWorker(logger)
-    {
-        BackupConfig = new BackupWorkerConfig
-        {
-            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(server, "A").ToString(),
-            DelayTime = TimeSpan.FromSeconds(5)
-        }
-    };
-    manage.AddWorker(backup);
-    manage.AddWorker(new RestoreWorker(logger)
-    {
-        RestoreConfig = new RestoreWorkerConfig
-        {
-            SqlConnectString = FastQueryLib.SqlServerExecuterHelper.CreateConnectionString(server, "A_copy").ToString(),
-            BackupAddress = "http://localhost:5000/",
-            IdBackupWorker = backup.Config.Id,
-            DelayTime = TimeSpan.FromSeconds(5)
-        },
-    });
-
-});
-#endif
-
 app.Run();
 
