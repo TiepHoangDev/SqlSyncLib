@@ -14,12 +14,9 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="FastQueryLib" Version="2023.12.19.647" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
     <PackageReference Include="NReco.Logging.File" Version="1.1.7" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\FastQueryLib\src\FastQueryLib\FastQueryLib.csproj" />
   </ItemGroup>
 </Project>
