@@ -17,6 +17,7 @@ public class ManageWorkerServiceTests
 #else
     readonly string SERVER = ".";
 #endif
+    readonly string DATABASE = "dbX";
 
     [OneTimeSetUp]
     public void Setup()
@@ -29,7 +30,7 @@ public class ManageWorkerServiceTests
         {
             BackupConfig = new BackupWorkerConfig
             {
-                SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(SERVER, "A").ToString()
+                SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(SERVER, DATABASE).ToString()
             }
         };
         if (Directory.Exists(_backup.BackupConfig.DirRoot)) Directory.Delete(_backup.BackupConfig.DirRoot, true);
@@ -53,7 +54,7 @@ public class ManageWorkerServiceTests
         {
             RestoreConfig = new RestoreWorkerConfig
             {
-                SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(SERVER, "A_copy").ToString(),
+                SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(SERVER, $"{DATABASE}_copy").ToString(),
                 BackupAddress = "http://localhost:5000/",
                 IdBackupWorker = _backup.Config.Id,
             },

@@ -26,16 +26,22 @@ namespace SqlSyncDbService.Workers.Helpers
                 .ExecuteReadAsyncAs<RESTORE_FILELISTONLY_Record>();
             if (result.Result.Any())
             {
-                string getMoveQuery(RESTORE_FILELISTONLY_Record filelistonly_record, string id)
+                string getMoveQuery(RESTORE_FILELISTONLY_Record filelistonly_record, string id, string dir)
                 {
                     var extention = Path.GetExtension(filelistonly_record.PhysicalName) ?? throw new NullReferenceException(nameof(filelistonly_record.PhysicalName));
-                    var dir = Path.GetDirectoryName(filelistonly_record.PhysicalName) ?? throw new NullReferenceException(nameof(filelistonly_record.PhysicalName));
                     var newPath = Path.Combine(dir, $"{dbName}_{id}{extention}");
                     return $"MOVE N'{filelistonly_record.LogicalName}' TO N'{newPath}'";
                 }
 
+                //create dir save primary file and log
+                var dir = Path.GetDirectoryName(fullPath) ?? fullPath;
+                dir = Path.GetDirectoryName(dir) ?? fullPath;
+                dir = Path.Combine(dir, "database_files");
+                if (!Directory.Exists(dir)) Directory.CreateDirectory(dir);
+
+                //create query
                 var id = VersionFactory.Instance.GetNewVersion();
-                var queryMoves = result.Result.Select(q => getMoveQuery(q, id)).ToList();
+                var queryMoves = result.Result.Select(q => getMoveQuery(q, id, dir)).ToList();
                 queryMoves.Insert(0, queryRestore);
                 queryRestore = string.Join(", ", queryMoves);
             }
