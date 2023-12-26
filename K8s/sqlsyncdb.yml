@@ -1,3 +1,30 @@
+#PV
+#https://stackoverflow.com/a/71064729
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: my-pv-local
+spec:
+  capacity:
+    storage: 50Gi
+  accessModes:
+    - ReadWriteMany
+  hostPath:
+    path: /run/desktop/mnt/host/d/share
+---
+#PVC
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: my-pvc-local
+spec:
+  accessModes:
+    - ReadWriteMany
+  storageClassName: ""
+  resources:
+    requests:
+        storage: 50Gi
+---
 # deployment.yaml
 apiVersion: apps/v1
 kind: Deployment
@@ -17,7 +44,18 @@ spec:
       - name: sqlsyncdb
         image: tiephoangdev/sync.db.sql:latest
         ports:
-        - containerPort: 5000
+           - containerPort: 5000
+        volumeMounts:
+           - name: sqlsyncdb-data
+             mountPath: /app/data
+             subPath: sqlsyncdb/data
+           - name: sqlsyncdb-data
+             mountPath: /app/logs
+             subPath: sqlsyncdb/logs
+      volumes:
+        - name: sqlsyncdb-data
+          persistentVolumeClaim:
+            claimName: my-pvc-local
 ---
 # service.yaml
 apiVersion: v1
