@@ -10,8 +10,10 @@ namespace SqlSyncDbService.Workers.Interfaces
         public virtual TimeSpan DelayTime { get; set; } = TimeSpan.FromSeconds(8);
 
         private string? sqlConnectString;
-        public virtual string DirRoot{ get; private set; } = "./data/DbName/";
+        public virtual string DirRoot { get; private set; } = "./data/DbName/";
         public virtual string DirData { get; set; } = "./data/DbName/base";
+        public virtual EnumWorkerMode workerMode { get; set; } = EnumWorkerMode.Auto;
+        public virtual bool IsAuto => workerMode == EnumWorkerMode.Auto;
 
         public virtual string DbName { get; private set; } = "";
 
@@ -24,6 +26,7 @@ namespace SqlSyncDbService.Workers.Interfaces
                 sqlConnectString = value;
             }
         }
+
 
         public virtual void OnUpdateSqlConnectionString(string? newValue, string? oldValue)
         {

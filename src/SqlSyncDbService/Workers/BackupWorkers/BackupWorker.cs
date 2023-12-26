@@ -24,21 +24,24 @@ namespace SqlSyncLib.Workers.BackupWorkers
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                //backup
-                await State.UpdateStateByProcess(async () =>
+                if (BackupConfig.IsAuto)
                 {
-                    var isExistbackupFull = BackupConfig.IsExistBackupFull(BackupState.MinVersion);
+                    //backup
+                    await State.UpdateStateByProcess(async () =>
+                    {
+                        var isExistbackupFull = BackupConfig.IsExistBackupFull(BackupState.MinVersion);
 
-                    if (!isExistbackupFull || BackupConfig.IsReset(DateTime.Now))
-                    {
-                        await BackupFullAsync();
-                    }
-                    else
-                    {
-                        await BackupLogAsync();
-                    }
-                });
-                CallHookAsync("BackupSuccess", BackupState);
+                        if (!isExistbackupFull || BackupConfig.IsReset(DateTime.Now))
+                        {
+                            await BackupFullAsync();
+                        }
+                        else
+                        {
+                            await BackupLogAsync();
+                        }
+                    });
+                    CallHookAsync("BackupSuccess", BackupState);
+                }
 
                 if (cancellationToken.IsCancellationRequested) break;
                 await Task.Delay(BackupConfig.DelayTime, cancellationToken);

@@ -9,5 +9,6 @@ namespace SqlSyncDbService.Workers.Interfaces
         string Id { get; }
         TimeSpan DelayTime { get; }
         string? SqlConnectString { get; }
+        EnumWorkerMode workerMode { get; }
     }
 }

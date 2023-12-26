@@ -25,9 +25,12 @@ namespace SqlSyncDbService.Workers.RestoreWorkers
         {
             while (!cancellationToken.IsCancellationRequested)
             {
-                await State.UpdateStateByProcess(() => DownloadNewBackupAsync(cancellationToken));
-                await State.UpdateStateByProcess(() => RestoreAsync(cancellationToken));
-                CallHookAsync("RestoreWorker", RestoreState);
+                if (RestoreConfig.IsAuto)
+                {
+                    await State.UpdateStateByProcess(() => DownloadNewBackupAsync(cancellationToken));
+                    await State.UpdateStateByProcess(() => RestoreAsync(cancellationToken));
+                    CallHookAsync("RestoreWorker", RestoreState);
+                }
 
                 if (cancellationToken.IsCancellationRequested) break;
                 await Task.Delay(RestoreConfig.DelayTime, cancellationToken);
