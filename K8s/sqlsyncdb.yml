@@ -8,24 +8,24 @@ spec:
   capacity:
     storage: 50Gi
   accessModes:
-    - ReadWriteMany
+  - ReadWriteMany
   hostPath:
     path: /run/desktop/mnt/host/d/share
----
 #PVC
+---
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: my-pvc-local
 spec:
   accessModes:
-    - ReadWriteMany
+  - ReadWriteMany
   storageClassName: ""
   resources:
     requests:
-        storage: 50Gi
----
+      storage: 50Gi
 # deployment.yaml
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -44,20 +44,20 @@ spec:
       - name: sqlsyncdb
         image: tiephoangdev/sync.db.sql:latest
         ports:
-           - containerPort: 5000
+        - containerPort: 5000
         volumeMounts:
-           - name: sqlsyncdb-data
-             mountPath: /app/data
-             subPath: sqlsyncdb/data
-           - name: sqlsyncdb-data
-             mountPath: /app/logs
-             subPath: sqlsyncdb/logs
-      volumes:
         - name: sqlsyncdb-data
-          persistentVolumeClaim:
-            claimName: my-pvc-local
----
+          mountPath: /app/data
+          subPath: sqlsyncdb/data
+        - name: sqlsyncdb-data
+          mountPath: /app/logs
+          subPath: sqlsyncdb/logs
+      volumes:
+      - name: sqlsyncdb-data
+        persistentVolumeClaim:
+          claimName: my-pvc-local
 # service.yaml
+---
 apiVersion: v1
 kind: Service
 metadata:
@@ -66,7 +66,7 @@ spec:
   selector:
     app: sqlsyncdb
   ports:
-    - protocol: TCP
-      port: 5000
-      targetPort: 5000
+  - protocol: TCP
+    port: 5000
+    targetPort: 5000
   type: LoadBalancer
