@@ -1,0 +1,8 @@
+version: '3.4'
+
+services:
+  sqlsyncdbservice:
+    image: ${DOCKER_REGISTRY-}sqlsyncdbservice
+    build:
+      context: .
+      dockerfile: SqlSyncDbService/Dockerfile

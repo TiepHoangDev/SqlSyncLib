@@ -20,8 +20,6 @@ builder.Services.AddLogging(loggingBuilder =>
     });
 });
 
-//config URLs
-builder.WebHost.UseUrls("http://*:5000;");
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
