@@ -1,5 +1,6 @@
 #See https://aka.ms/customizecontainer to learn how to customize your debug container and how Visual Studio uses this Dockerfile to build your images for faster debugging.
 
+
 FROM mcr.microsoft.com/dotnet/aspnet:6.0 AS base
 WORKDIR /app
 EXPOSE 80
@@ -10,10 +11,12 @@ COPY ["SqlSyncDbService/SqlSyncDbService.csproj", "SqlSyncDbService/"]
 RUN dotnet restore "SqlSyncDbService/SqlSyncDbService.csproj"
 COPY . .
 WORKDIR "/src/SqlSyncDbService"
-RUN dotnet build "SqlSyncDbService.csproj" -c Release -o /app/build
+ARG BuildVersion="*"
+ENV BuildVersion=$BuildVersion
+RUN dotnet build "SqlSyncDbService.csproj" -c Release -o /app/build /p:BuildVersion=$BuildVersion --no-restore 
 
 FROM build AS publish
-RUN dotnet publish "SqlSyncDbService.csproj" -c Release -o /app/publish /p:UseAppHost=false
+RUN dotnet publish "SqlSyncDbService.csproj" -c Release -o /app/publish /p:BuildVersion=$BuildVersion --no-restore /p:UseAppHost=false
 
 FROM base AS final
 WORKDIR /app

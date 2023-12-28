@@ -1,9 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using SqlSyncDbService.Workers.Helpers;
 using SqlSyncDbService.Workers.Interfaces;
+using SqlSyncDbService.Workers.BackupWorkers;
 using System.Diagnostics;
 
-namespace SqlSyncLib.Workers.BackupWorkers
+namespace SqlSyncDbService.Workers.BackupWorkers
 {
     public class BackupWorker : WorkerBase
     {

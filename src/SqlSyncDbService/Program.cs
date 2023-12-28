@@ -2,7 +2,9 @@ using SqlSyncDbService.Services;
 using SqlSyncDbService.Workers.Interfaces;
 using SqlSyncDbService.Workers.ManageWorkers;
 using SqlSyncDbService.Workers.RestoreWorkers;
-using SqlSyncLib.Workers.BackupWorkers;
+using SqlSyncDbService.Workers.BackupWorkers;
+using System.Runtime.CompilerServices;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -40,7 +42,11 @@ app.UseSwaggerUI(options =>
 app.UseDeveloperExceptionPage();
 app.MapControllers();
 
+var version = typeof(Program).Assembly.GetName().Version?.ToString() ?? "unknow";
+Console.WriteLine($"version = {version}");
+
 app.MapGet("/", () => Results.Redirect("/swagger/index.html"));
+app.MapGet("/v", () => version);
 
 app.Run();
 

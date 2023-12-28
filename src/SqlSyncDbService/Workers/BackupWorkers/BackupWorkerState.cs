@@ -1,7 +1,7 @@
 ﻿using SqlSyncDbService.Workers.Helpers;
 using SqlSyncDbService.Workers.Interfaces;
 
-namespace SqlSyncLib.Workers.BackupWorkers
+namespace SqlSyncDbService.Workers.BackupWorkers
 {
     public record BackupWorkerState : WorkerStateVersionBase
     {

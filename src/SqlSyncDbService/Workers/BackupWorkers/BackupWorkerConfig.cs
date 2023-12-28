@@ -5,7 +5,7 @@ using SqlSyncDbService.Workers.Interfaces;
 using System.Diagnostics;
 using System.Text.Json;
 
-namespace SqlSyncLib.Workers.BackupWorkers
+namespace SqlSyncDbService.Workers.BackupWorkers
 {
     public class BackupWorkerConfig : WorkerConfigBase
     {

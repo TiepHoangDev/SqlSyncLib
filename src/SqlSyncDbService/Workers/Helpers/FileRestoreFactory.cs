@@ -1,5 +1,5 @@
-﻿using SqlSyncDbService.Workers.Interfaces;
-using SqlSyncLib.Workers.BackupWorkers;
+﻿using SqlSyncDbService.Workers.BackupWorkers;
+using SqlSyncDbService.Workers.Interfaces;
 using System.Diagnostics;
 using System.IO.Compression;
 using System.Text.Json;

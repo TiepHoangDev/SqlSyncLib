@@ -5,7 +5,7 @@ using System.Data.Common;
 using System.Diagnostics;
 using System.Diagnostics.Metrics;
 
-namespace SqlSyncLib.Workers.BackupWorkers
+namespace SqlSyncDbService.Workers.BackupWorkers
 {
     public class BackupWorkerApi
     {

@@ -1,4 +1,4 @@
-﻿using SqlSyncLib.Workers.BackupWorkers;
+﻿using SqlSyncDbService.Workers.BackupWorkers;
 
 namespace SqlSyncDbService.Workers.Helpers
 {
