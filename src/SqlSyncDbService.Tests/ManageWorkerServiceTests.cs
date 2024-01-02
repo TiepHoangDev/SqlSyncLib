@@ -2,7 +2,6 @@
 using Moq;
 using SqlSyncDbService.Workers.BackupWorkers;
 using SqlSyncDbService.Workers.RestoreWorkers;
-using SqlSyncDbService.Workers.BackupWorkers;
 using System.Diagnostics;
 
 namespace SqlSyncDbService.Tests;
