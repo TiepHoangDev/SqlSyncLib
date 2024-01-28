@@ -1,4 +1,4 @@
-﻿using SqlSyncDbService.Workers.Interfaces;
+﻿using SqlSyncDbServiceLib.Interfaces;
 
 namespace SqlSyncDbService.Services
 {

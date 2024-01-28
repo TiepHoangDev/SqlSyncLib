@@ -23,10 +23,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FastQueryLib" Version="2023.12.19.647" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.4" />
 		<PackageReference Include="NReco.Logging.File" Version="1.1.7" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SqlSyncDbServiceLib\SqlSyncDbServiceLib.csproj" />
 	</ItemGroup>
 </Project>

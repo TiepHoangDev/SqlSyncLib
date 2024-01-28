@@ -7,6 +7,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSyncDbService", "SqlSync
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SqlSyncDbService.Tests", "SqlSyncDbService.Tests\SqlSyncDbService.Tests.csproj", "{8A21E07D-9AC2-43A1-BF62-3EB538FA5653}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SqlSyncDbServiceLib", "SqlSyncDbServiceLib\SqlSyncDbServiceLib.csproj", "{21D63DB3-9CAC-46D6-9C9A-83D270B9DB74}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -21,6 +23,10 @@ Global
 		{8A21E07D-9AC2-43A1-BF62-3EB538FA5653}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8A21E07D-9AC2-43A1-BF62-3EB538FA5653}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8A21E07D-9AC2-43A1-BF62-3EB538FA5653}.Release|Any CPU.Build.0 = Release|Any CPU
+		{21D63DB3-9CAC-46D6-9C9A-83D270B9DB74}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{21D63DB3-9CAC-46D6-9C9A-83D270B9DB74}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{21D63DB3-9CAC-46D6-9C9A-83D270B9DB74}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{21D63DB3-9CAC-46D6-9C9A-83D270B9DB74}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

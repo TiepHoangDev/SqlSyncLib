@@ -1,7 +1,8 @@
 ﻿using FastQueryLib;
+using Microsoft.Data.SqlClient;
 using Moq;
-using SqlSyncDbService.Workers.BackupWorkers;
-using SqlSyncDbService.Workers.RestoreWorkers;
+using SqlSyncDbServiceLib.BackupWorkers;
+using SqlSyncDbServiceLib.RestoreWorkers;
 using System.Diagnostics;
 
 namespace SqlSyncDbService.Tests;
@@ -12,7 +13,7 @@ public class ManageWorkerServiceTests
     private BackupWorker _backup;
     private RestoreWorker _restore;
 
-#if DEBUG0
+#if DEBUG
     readonly string SERVER = ".\\SQLEXPRESS";
 #else
     readonly string SERVER = ".";
@@ -20,9 +21,24 @@ public class ManageWorkerServiceTests
     readonly string DATABASE = "dbX";
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
         Trace.Listeners.Add(new ConsoleTraceListener());
+
+        //create db
+        using var fastQuery = await new SqlConnection(SqlServerExecuterHelper.CreateConnectionString(SERVER, "master").ToString()).CreateFastQuery()
+             .WithQuery("IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'dbX') BEGIN CREATE DATABASE dbX; END")
+             .ExecuteNonQueryAsync();
+
+        using var fastQuery2 = await new SqlConnection(SqlServerExecuterHelper.CreateConnectionString(SERVER, "dbX").ToString()).CreateFastQuery()
+             .WithQuery(@"IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Products')
+BEGIN
+    CREATE TABLE Products (
+        ID INT IDENTITY(1,1) PRIMARY KEY,
+        CreateTime DATETIME
+    );
+END")
+             .ExecuteNonQueryAsync();
 
         _tokenSource = new CancellationTokenSource();
 

@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using System.IO;
 using Microsoft.Data.SqlClient;
 using SqlSyncDbServiceLib.Helpers;
+using System.Diagnostics.SymbolStore;
 
 namespace SqlSyncDbServiceLib.BackupWorkers
 {
@@ -32,8 +33,12 @@ namespace SqlSyncDbServiceLib.BackupWorkers
                 dbConnection.Open();
                 await dbConnection.CreateFastQuery().UseSingleUserModeAsync(async fastquery =>
                 {
-                    await new LogBackupFileBackup(backupState).BackupAsync(dbConnection, pathFileLogBackUp);
-                    success = await new FullBackupFileBackup(backupState).BackupAsync(dbConnection, pathFileFullBackUp);
+                    var fullBackupFileBackup = new FullBackupFileBackup(backupState);
+                    if (await fullBackupFileBackup.BackupDatabase.CheckHasBackupFullAsync(fastquery))
+                    {
+                        await new LogBackupFileBackup(backupState).BackupAsync(dbConnection, pathFileLogBackUp);
+                    }
+                    success = await fullBackupFileBackup.BackupAsync(dbConnection, pathFileFullBackUp);
                 });
             }
 
