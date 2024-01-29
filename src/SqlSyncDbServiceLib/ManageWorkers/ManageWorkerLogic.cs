@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace SqlSyncDbServiceLib.ManageWorkers
 {
@@ -13,7 +14,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
         readonly ILogger logger;
         private readonly IManageWorker _manageWorker;
 
-        public ManageWorkerLogic(IManageWorker manageWorker, ILogger logger)
+        public ManageWorkerLogic(IManageWorker manageWorker, ILogger<ManageWorkerLogic> logger)
         {
             _manageWorker = manageWorker;
             this.logger = logger;

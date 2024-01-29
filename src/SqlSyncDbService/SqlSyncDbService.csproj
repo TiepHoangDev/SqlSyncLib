@@ -10,7 +10,7 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<BuildVersion>$([System.DateTime]::UtcNow.ToString("yyyy.M.d.hm"))</BuildVersion>
+		<BuildVersion>$([System.DateTime]::Now.ToString("yyyy.M.d.Hmm"))</BuildVersion>
 		<AssemblyVersion>$(BuildVersion)</AssemblyVersion>
 		<Authors>tiephoangdev</Authors>
 	</PropertyGroup>

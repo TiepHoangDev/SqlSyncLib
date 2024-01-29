@@ -1,9 +1,13 @@
 ﻿using System;
 using System.IO;
+using System.Reflection;
 using Microsoft.Data.SqlClient;
+using Microsoft.Extensions.DependencyInjection;
 using SqlSyncDbServiceLib.Helpers;
+using SqlSyncDbServiceLib.Interfaces;
+using SqlSyncDbServiceLib.ManageWorkers;
 
-namespace SqlSyncDbServiceLib.Interfaces
+namespace SqlSyncDbServiceLib
 {
     public abstract class WorkerConfigBase : IWorkerConfig
     {
@@ -66,5 +70,15 @@ namespace SqlSyncDbServiceLib.Interfaces
 
         #endregion
 
+    }
+
+    public static class SqlSyncDbServiceLibDI
+    {
+        public static IServiceCollection ConfigSqlSyncDbServiceLibDIDefault(this IServiceCollection services)
+        {
+            services.AddSingleton<IManageWorker, ManageWorker>();
+            services.AddScoped<IManageWorkerLogic, ManageWorkerLogic>();
+            return services;
+        }
     }
 }

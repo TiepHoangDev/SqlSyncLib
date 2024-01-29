@@ -1,5 +1,4 @@
-﻿using SqlSyncDbServiceLib.Interfaces;
-using System.IO;
+﻿using System.IO;
 
 namespace SqlSyncDbServiceLib.RestoreWorkers
 {

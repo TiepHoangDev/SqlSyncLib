@@ -1,5 +1,4 @@
-﻿using SqlSyncDbServiceLib.Interfaces;
-using System;
+﻿using System;
 using System.IO;
 
 namespace SqlSyncDbServiceLib.BackupWorkers

@@ -6,6 +6,7 @@ using System;
 using Microsoft.Data.SqlClient;
 using SqlSyncDbServiceLib.Helpers;
 using SqlSyncDbServiceLib.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace SqlSyncDbServiceLib.RestoreWorkers
 {

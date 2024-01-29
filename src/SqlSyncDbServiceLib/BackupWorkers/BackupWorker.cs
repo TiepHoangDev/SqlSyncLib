@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using System.Threading;
 using SqlSyncDbServiceLib.Helpers;
 using SqlSyncDbServiceLib.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace SqlSyncDbServiceLib.BackupWorkers
 {

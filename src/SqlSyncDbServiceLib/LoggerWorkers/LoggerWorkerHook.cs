@@ -2,6 +2,7 @@
 using System.Diagnostics;
 using System.Threading.Tasks;
 using SqlSyncDbServiceLib.Interfaces;
+using Microsoft.Extensions.Logging;
 
 namespace SqlSyncDbServiceLib.LoggerWorkers
 {

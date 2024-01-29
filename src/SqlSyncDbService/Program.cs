@@ -1,6 +1,5 @@
-using SqlSyncDbService.Models;
 using SqlSyncDbService.Services;
-using SqlSyncDbServiceLib.Interfaces;
+using SqlSyncDbServiceLib;
 using SqlSyncDbServiceLib.ManageWorkers;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -24,9 +23,9 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddControllers();
 
-builder.Services.AddScoped<SqlSyncDbServiceLib.Interfaces.ILogger, WorkerLogger>();
-builder.Services.AddSingleton<IManageWorker, ManageWorker>();
-builder.Services.AddScoped<IManageWorkerLogic, ManageWorkerLogic>();
+//Config SqlSyncDbServiceLib DI Default
+builder.Services.ConfigSqlSyncDbServiceLibDIDefault();
+
 builder.Services.AddHostedService<ManageWorkerService>();
 
 var app = builder.Build();

@@ -5,6 +5,7 @@ using System.Threading;
 using System.Collections.Generic;
 using SqlSyncDbServiceLib.Interfaces;
 using SqlSyncDbServiceLib.LoggerWorkers;
+using Microsoft.Extensions.Logging;
 
 namespace SqlSyncDbServiceLib.Helpers
 {
