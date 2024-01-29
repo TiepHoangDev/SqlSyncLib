@@ -13,7 +13,7 @@ public class ManageWorkerServiceTests
     private BackupWorker _backup;
     private RestoreWorker _restore;
 
-#if DEBUG
+#if DEBUG0
     readonly string SERVER = ".\\SQLEXPRESS";
 #else
     readonly string SERVER = ".";
@@ -76,7 +76,17 @@ END")
             },
             RestoreDownload = mock.Object
         };
-        if (Directory.Exists(_restore.RestoreConfig.DirRoot)) Directory.Delete(_restore.RestoreConfig.DirRoot, true);
+        if (Directory.Exists(_restore.RestoreConfig.DirRoot))
+        {
+            try
+            {
+                Directory.Delete(_restore.RestoreConfig.DirRoot, true);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
     }
 
     [Test]
