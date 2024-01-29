@@ -8,9 +8,9 @@ namespace SqlSyncDbServiceLib.LoggerWorkers
 {
     public class LoggerWorkerHook : IWorkerHook
     {
-        readonly ILogger _logger;
+        readonly ISqlSyncDbServiceLibLogger _logger;
 
-        public LoggerWorkerHook(ILogger logger)
+        public LoggerWorkerHook(ISqlSyncDbServiceLibLogger logger)
         {
             _logger = logger;
         }
@@ -21,13 +21,13 @@ namespace SqlSyncDbServiceLib.LoggerWorkers
             Debug.WriteLine($"{name}>> {data}");
             if (data is Exception ex)
             {
-                _logger?.LogError(ex, ex.Message);
+                _logger?.Log(ex);
             }
             else if (data is IWorkerState state)
             {
                 if (state.IsSuccess == false)
                 {
-                    _logger?.LogError(state.ToString());
+                    _logger?.Log(state.ToString());
                 }
             }
             return Task.CompletedTask;

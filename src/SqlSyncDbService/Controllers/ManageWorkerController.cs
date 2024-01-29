@@ -35,6 +35,5 @@ namespace SqlSyncDbService.Controllers
         [HttpPost, Route("[action]")]
         public bool RemoveWorker(string id)
             => _manageWorkerLogic.RemoveWorker(id);
-
     }
 }

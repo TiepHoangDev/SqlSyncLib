@@ -79,7 +79,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
             GC.SuppressFinalize(this);
         }
 
-        public List<IWorker> GetWorkers(List<string> ids = null)
+        public List<IWorker> GetWorkers(List<string> ids)
         {
             return Workers.Values
                 .Where(q => ids?.Any() != true || ids.Contains(q.Worker.Id))

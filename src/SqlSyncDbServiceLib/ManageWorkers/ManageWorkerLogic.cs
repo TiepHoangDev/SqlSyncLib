@@ -11,16 +11,16 @@ namespace SqlSyncDbServiceLib.ManageWorkers
 {
     public class ManageWorkerLogic : IManageWorkerLogic
     {
-        readonly ILogger logger;
+        readonly ISqlSyncDbServiceLibLogger logger;
         private readonly IManageWorker _manageWorker;
 
-        public ManageWorkerLogic(IManageWorker manageWorker, ILogger<ManageWorkerLogic> logger)
+        public ManageWorkerLogic(IManageWorker manageWorker, ISqlSyncDbServiceLibLogger logger)
         {
             _manageWorker = manageWorker;
             this.logger = logger;
         }
 
-        public List<IWorker> GetWorkers(List<string> ids = null)
+        public List<IWorker> GetWorkers(List<string> ids)
         {
             return _manageWorker.GetWorkers(ids);
         }
@@ -60,7 +60,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
         {
             if (_manageWorker.AddWorker(worker))
             {
-                return GetWorkers();
+                return GetWorkers(null);
             }
             return null;
         }

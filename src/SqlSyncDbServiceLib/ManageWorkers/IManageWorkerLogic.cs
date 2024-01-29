@@ -10,7 +10,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
         List<IWorker> AddBackupWorker(BackupWorkerConfig config);
         List<IWorker> AddRestoreWorker(RestoreWorkerConfig config);
         GetNewBackupResponse GetNewBackup(GetNewBackupRequest getFileBackup);
-        List<IWorker> GetWorkers(List<string> ids = null);
+        List<IWorker> GetWorkers(List<string> ids);
         bool RemoveWorker(string id);
     }
 }

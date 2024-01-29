@@ -1,3 +1,4 @@
+using SqlSyncDbService.Models;
 using SqlSyncDbService.Services;
 using SqlSyncDbServiceLib;
 using SqlSyncDbServiceLib.ManageWorkers;
@@ -24,7 +25,8 @@ builder.Services.AddSwaggerGen();
 builder.Services.AddControllers();
 
 //Config SqlSyncDbServiceLib DI Default
-builder.Services.ConfigSqlSyncDbServiceLibDIDefault();
+builder.Services.AddTransient<SqlSyncDbServiceLibLogger>();
+builder.Services.ConfigSqlSyncDbServiceLibDIDefault(new ConfigSqlSyncDbServiceLibDI());
 
 builder.Services.AddHostedService<ManageWorkerService>();
 

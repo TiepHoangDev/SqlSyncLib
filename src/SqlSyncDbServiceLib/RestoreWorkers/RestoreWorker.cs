@@ -12,7 +12,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
 {
     public class RestoreWorker : WorkerBase
     {
-        public RestoreWorker(ILogger logger = null) : base(logger)
+        public RestoreWorker(ISqlSyncDbServiceLibLogger logger = null) : base(logger)
         {
         }
 
