@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 
-namespace SqlSyncDbServiceLib.Interfaces
+namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces
 {
     public interface IWorkerHook
     {

@@ -1,4 +1,4 @@
-﻿namespace SqlSyncDbServiceLib.Interfaces
+﻿namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces
 {
     public enum EnumWorkerMode
     {

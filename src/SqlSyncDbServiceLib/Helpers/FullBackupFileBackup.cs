@@ -1,4 +1,4 @@
-﻿using SqlSyncDbServiceLib.BackupWorkers;
+﻿using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 
 namespace SqlSyncDbServiceLib.Helpers
 {

@@ -1,4 +1,4 @@
-﻿using SqlSyncDbServiceLib.Interfaces;
+﻿using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 
 namespace SqlSyncDbService.Models
 {

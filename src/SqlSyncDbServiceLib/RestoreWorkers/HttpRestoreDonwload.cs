@@ -1,12 +1,14 @@
-﻿using System.Diagnostics;
+﻿using Newtonsoft.Json;
+using SqlSyncDbServiceLib.ObjectTranfer;
+using SqlSyncDbServiceLib.ObjectTranfer.Instances;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
-using System.Threading.Tasks;
-using System.Threading;
+using System.Diagnostics;
 using System.IO;
-using System.Net.Http;
 using System.Net;
-using Newtonsoft.Json;
-using SqlSyncDbServiceLib.ManageWorkers;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.RestoreWorkers
 {

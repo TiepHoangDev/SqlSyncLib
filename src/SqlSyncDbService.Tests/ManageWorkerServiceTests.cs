@@ -2,6 +2,8 @@
 using Microsoft.Data.SqlClient;
 using Moq;
 using SqlSyncDbServiceLib.BackupWorkers;
+using SqlSyncDbServiceLib.ObjectTranfer.Instances;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using SqlSyncDbServiceLib.RestoreWorkers;
 using System.Diagnostics;
 
@@ -26,7 +28,8 @@ public class ManageWorkerServiceTests
         Trace.Listeners.Add(new ConsoleTraceListener());
 
         //create db
-        using var fastQuery = await new SqlConnection(SqlServerExecuterHelper.CreateConnectionString(SERVER, "master").ToString()).CreateFastQuery()
+        var masterConnectionString = SqlServerExecuterHelper.CreateConnectionString(SERVER, "master").ToString();
+        using var fastQuery = await new SqlConnection(masterConnectionString).CreateFastQuery()
              .WithQuery("IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'dbX') BEGIN CREATE DATABASE dbX; END")
              .ExecuteNonQueryAsync();
 

@@ -1,11 +1,10 @@
-﻿using System.Diagnostics;
+﻿using SqlSyncDbServiceLib.LoggerWorkers;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
-using System.Threading.Tasks;
-using System.Threading;
 using System.Collections.Generic;
-using SqlSyncDbServiceLib.Interfaces;
-using SqlSyncDbServiceLib.LoggerWorkers;
-using Microsoft.Extensions.Logging;
+using System.Diagnostics;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.Helpers
 {

@@ -1,7 +1,6 @@
 using SqlSyncDbService.Models;
 using SqlSyncDbService.Services;
 using SqlSyncDbServiceLib;
-using SqlSyncDbServiceLib.ManageWorkers;
 
 var builder = WebApplication.CreateBuilder(args);
 

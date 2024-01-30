@@ -1,12 +1,12 @@
-﻿using System.Diagnostics;
+﻿using Microsoft.Data.SqlClient;
+using SqlSyncDbServiceLib.Helpers;
+using SqlSyncDbServiceLib.ObjectTranfer.Instances;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
+using System;
+using System.Diagnostics;
+using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using System.IO;
-using System;
-using Microsoft.Data.SqlClient;
-using SqlSyncDbServiceLib.Helpers;
-using SqlSyncDbServiceLib.Interfaces;
-using Microsoft.Extensions.Logging;
 
 namespace SqlSyncDbServiceLib.RestoreWorkers
 {

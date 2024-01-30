@@ -1,9 +1,9 @@
-﻿using System.IO.Compression;
+﻿using Microsoft.Data.SqlClient;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
-using System.Threading.Tasks;
 using System.IO;
-using Microsoft.Data.SqlClient;
-using SqlSyncDbServiceLib.Interfaces;
+using System.IO.Compression;
+using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.Helpers
 {

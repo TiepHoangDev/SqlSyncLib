@@ -1,13 +1,21 @@
 ﻿using System;
 using System.IO;
 
-namespace SqlSyncDbServiceLib.BackupWorkers
+namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
 {
     public class BackupWorkerConfig : WorkerConfigBase
     {
         public TimeSpan ResetAtTime { get; set; } = new TimeSpan(4, 0, 0);
         public DayOfWeek? ResetAtDay { get; set; } = DayOfWeek.Saturday;
         public DateTime? LastRunBackupFull { get; set; }
+
+        public static BackupWorkerConfig Create(string SqlConnectString)
+        {
+            return new BackupWorkerConfig
+            {
+                SqlConnectString = SqlConnectString,
+            };
+        }
 
         public override void OnUpdateSqlConnectionString(string newValue, string oldValue)
         {

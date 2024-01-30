@@ -1,10 +1,10 @@
-﻿using System.Diagnostics;
+﻿using SqlSyncDbServiceLib.Helpers;
+using SqlSyncDbServiceLib.ObjectTranfer.Instances;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
-using System.Threading.Tasks;
+using System.Diagnostics;
 using System.Threading;
-using SqlSyncDbServiceLib.Helpers;
-using SqlSyncDbServiceLib.Interfaces;
-using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.BackupWorkers
 {

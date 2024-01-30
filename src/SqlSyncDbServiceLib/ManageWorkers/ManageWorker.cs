@@ -1,4 +1,6 @@
-﻿using SqlSyncDbServiceLib.Interfaces;
+﻿using SqlSyncDbServiceLib.BackupWorkers;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
+using SqlSyncDbServiceLib.RestoreWorkers;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,6 +14,34 @@ namespace SqlSyncDbServiceLib.ManageWorkers
         private readonly Dictionary<string, ManageWorkerItem> Workers = new Dictionary<string, ManageWorkerItem>();
         private TaskCompletionSource<bool> _taskCompletionSource = null;
         private CancellationTokenSource _tokenSource = null;
+        public ILoaderConfig LoaderConfig { get; private set; }
+
+        public ManageWorker(ILoaderConfig loaderConfig)
+        {
+            _taskCompletionSource = new TaskCompletionSource<bool>();
+            _tokenSource = new CancellationTokenSource();
+            _tokenSource.Token.Register(() => _taskCompletionSource.TrySetCanceled());
+            LoaderConfig = loaderConfig;
+            Init();
+        }
+
+        private void Init()
+        {
+            foreach (var backupWorkerConfig in LoaderConfig.BackupWorkerConfigs)
+            {
+                AddWorker(new BackupWorker
+                {
+                    BackupConfig = backupWorkerConfig
+                });
+            }
+            foreach (var restoreWorkerConfig in LoaderConfig.RestoreWorkerConfigs)
+            {
+                AddWorker(new RestoreWorker
+                {
+                    RestoreConfig = restoreWorkerConfig
+                });
+            }
+        }
 
         class ManageWorkerItem : IDisposable
         {
@@ -44,7 +74,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
 
         public bool AddWorker(IWorker worker)
         {
-            var cancellation = _tokenSource?.Token ?? throw new Exception("Please call RunAsync first");
+            var cancellation = _tokenSource.Token;
             var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
 
             var id = worker?.Id ?? throw new Exception("empty-id");
@@ -60,9 +90,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
 
         public async Task<bool> RunAsync(CancellationToken cancellationToken)
         {
-            _taskCompletionSource = new TaskCompletionSource<bool>();
-            _tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
-            _tokenSource.Token.Register(() => _taskCompletionSource.TrySetCanceled());
+            cancellationToken.Register(() => _tokenSource.Cancel());
             return await _taskCompletionSource.Task;
         }
 

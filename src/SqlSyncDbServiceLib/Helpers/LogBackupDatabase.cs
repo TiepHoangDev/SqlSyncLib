@@ -1,9 +1,8 @@
 ﻿using FastQueryLib;
-using System.Threading.Tasks;
-using System.IO;
 using Microsoft.Data.SqlClient;
-using System.Xml.Linq;
 using System;
+using System.IO;
+using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.Helpers
 {

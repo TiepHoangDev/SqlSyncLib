@@ -1,10 +1,10 @@
-﻿using System.IO.Compression;
-using System.Text.Json;
+﻿using SqlSyncDbServiceLib.ObjectTranfer.Instances;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
-using System.Threading.Tasks;
 using System.IO;
-using SqlSyncDbServiceLib.BackupWorkers;
-using SqlSyncDbServiceLib.Interfaces;
+using System.IO.Compression;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.Helpers
 {

@@ -1,8 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
+﻿using Microsoft.Data.SqlClient;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
+using System;
 using System.IO;
-using Microsoft.Data.SqlClient;
-using SqlSyncDbServiceLib.Interfaces;
+using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.Helpers
 {

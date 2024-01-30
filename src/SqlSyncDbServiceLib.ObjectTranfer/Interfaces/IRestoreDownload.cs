@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 using System.Threading;
+using System.Threading.Tasks;
 
-namespace SqlSyncDbServiceLib.RestoreWorkers
+namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces
 {
     public interface IRestoreDownload
     {

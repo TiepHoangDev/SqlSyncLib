@@ -1,8 +1,6 @@
 ﻿using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Logging;
-using SqlSyncDbServiceLib.Interfaces;
 using SqlSyncDbServiceLib.ManageWorkers;
-using System.Reflection;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 
 namespace SqlSyncDbServiceLib
 {
@@ -11,6 +9,7 @@ namespace SqlSyncDbServiceLib
         public static IServiceCollection ConfigSqlSyncDbServiceLibDIDefault(this IServiceCollection services, IConfigSqlSyncDbServiceLibDI configSqlSync)
         {
             services.AddSingleton(configSqlSync.GetISqlSyncDbServiceLibLogger);
+            services.AddSingleton(configSqlSync.GetILoaderConfig);
             services.AddSingleton<IManageWorker, ManageWorker>();
             services.AddScoped<IManageWorkerLogic, ManageWorkerLogic>();
             return services;

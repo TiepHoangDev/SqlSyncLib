@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace SqlSyncDbServiceLib.Interfaces
+﻿namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces
 {
     public interface ISqlSyncDbServiceLibLogger
     {

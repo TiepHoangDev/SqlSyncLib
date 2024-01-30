@@ -1,6 +1,6 @@
 ﻿using SqlSyncDbServiceLib.Helpers;
 
-namespace SqlSyncDbServiceLib.BackupWorkers
+namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
 {
     public class BackupWorkerState : WorkerStateVersionBase
     {

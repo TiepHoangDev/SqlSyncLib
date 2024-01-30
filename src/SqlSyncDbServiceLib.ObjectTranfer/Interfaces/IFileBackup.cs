@@ -1,7 +1,7 @@
 ﻿using Microsoft.Data.SqlClient;
 using System.Threading.Tasks;
 
-namespace SqlSyncDbServiceLib.Interfaces
+namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces
 {
     public interface IFileBackup
     {

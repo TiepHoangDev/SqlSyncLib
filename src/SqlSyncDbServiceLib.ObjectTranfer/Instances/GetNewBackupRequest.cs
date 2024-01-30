@@ -1,4 +1,4 @@
-﻿namespace SqlSyncDbServiceLib.ManageWorkers
+﻿namespace SqlSyncDbServiceLib.ObjectTranfer
 {
     public class GetNewBackupRequest
     {

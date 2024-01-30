@@ -1,11 +1,12 @@
 ﻿using SqlSyncDbServiceLib.BackupWorkers;
-using SqlSyncDbServiceLib.Interfaces;
+using SqlSyncDbServiceLib.ObjectTranfer;
+using SqlSyncDbServiceLib.ObjectTranfer.Instances;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using SqlSyncDbServiceLib.RestoreWorkers;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.Extensions.Logging;
 
 namespace SqlSyncDbServiceLib.ManageWorkers
 {

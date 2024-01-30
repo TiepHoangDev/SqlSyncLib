@@ -1,8 +1,7 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using SqlSyncDbServiceLib.BackupWorkers;
-using SqlSyncDbServiceLib.Interfaces;
-using SqlSyncDbServiceLib.ManageWorkers;
-using SqlSyncDbServiceLib.RestoreWorkers;
+using SqlSyncDbServiceLib.ObjectTranfer;
+using SqlSyncDbServiceLib.ObjectTranfer.Instances;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 
 namespace SqlSyncDbService.Controllers
 {
