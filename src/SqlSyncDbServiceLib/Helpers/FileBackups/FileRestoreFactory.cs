@@ -6,12 +6,17 @@ using System.IO.Compression;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SqlSyncDbServiceLib.Helpers
+namespace SqlSyncDbServiceLib.Helpers.FileBackups
 {
+    /// <summary>
+    /// flow create file zip to save (AppendData, AppendHeader)
+    /// <para></para>
+    /// from zip file => IFileRestore (GetFileRestoreAsync)
+    /// </summary>
     public abstract class FileRestoreFactory
     {
         public const string HeaderEntryName = "header.json";
-        private const string DataEntryName = "data.dat";
+        public const string DataEntryName = "data.dat";
 
         public abstract HeaderFile Header { get; }
 
@@ -49,7 +54,7 @@ namespace SqlSyncDbServiceLib.Helpers
             }
         }
 
-        public static void SaveStreamData(string pathFileZip, string file)
+        public static void SaveFileZip(string pathFileZip, string file)
         {
             using (var zip = ZipFile.Open(pathFileZip, ZipArchiveMode.Read))
             {
@@ -72,7 +77,6 @@ namespace SqlSyncDbServiceLib.Helpers
         {
             using (var fs = zip.CreateEntry(DataEntryName).Open())
             {
-
                 data_fs.CopyTo(fs);
                 fs.Flush();
             }

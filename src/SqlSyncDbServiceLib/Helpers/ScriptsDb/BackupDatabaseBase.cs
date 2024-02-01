@@ -3,7 +3,7 @@ using System.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
 
-namespace SqlSyncDbServiceLib.Helpers
+namespace SqlSyncDbServiceLib.Helpers.ScriptsDb
 {
     public abstract class BackupDatabaseBase
     {

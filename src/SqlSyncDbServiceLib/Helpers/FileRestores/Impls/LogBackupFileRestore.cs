@@ -1,4 +1,7 @@
-﻿namespace SqlSyncDbServiceLib.Helpers
+﻿using SqlSyncDbServiceLib.Helpers.FileRestores;
+using SqlSyncDbServiceLib.Helpers.ScriptsDb;
+
+namespace SqlSyncDbServiceLib.Helpers.FileRestores.Impls
 {
     public class LogBackupFileRestore : BackupFileRestore
     {

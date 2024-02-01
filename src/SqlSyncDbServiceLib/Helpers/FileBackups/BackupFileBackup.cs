@@ -4,8 +4,9 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
+using SqlSyncDbServiceLib.Helpers.ScriptsDb;
 
-namespace SqlSyncDbServiceLib.Helpers
+namespace SqlSyncDbServiceLib.Helpers.FileBackups
 {
     public abstract class BackupFileBackup : FileRestoreFactory, IFileBackup
     {

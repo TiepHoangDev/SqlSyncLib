@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
-namespace SqlSyncDbServiceLib.Helpers
+namespace SqlSyncDbServiceLib.Helpers.ScriptsDb
 {
     public class FullBackupDatabase : BackupDatabaseBase
     {

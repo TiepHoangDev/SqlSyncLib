@@ -3,9 +3,14 @@ using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
 using System.IO;
 using System.Threading.Tasks;
+using SqlSyncDbServiceLib.Helpers.FileBackups;
+using SqlSyncDbServiceLib.Helpers.ScriptsDb;
 
-namespace SqlSyncDbServiceLib.Helpers
+namespace SqlSyncDbServiceLib.Helpers.FileRestores
 {
+    /// <summary>
+    /// abstract class. Restore database from pathFileZip
+    /// </summary>
     public abstract class BackupFileRestore : IFileRestore
     {
         public abstract string Name { get; }
@@ -22,7 +27,7 @@ namespace SqlSyncDbServiceLib.Helpers
                 var minVersion = header?.WorkerState.MinVersion
                     ?? throw new ArgumentNullException(header?.WorkerState.MinVersion, $"File not have {header?.WorkerState.MinVersion}, not valid file for restore. {pathFileZip}");
 
-                FileRestoreFactory.SaveStreamData(pathFileZip, tmp);
+                FileRestoreFactory.SaveFileZip(pathFileZip, tmp);
                 return await BackupDatabase.RestoreBackupAsync(sqlConnection, tmp, minVersion);
             }
             catch (Exception)

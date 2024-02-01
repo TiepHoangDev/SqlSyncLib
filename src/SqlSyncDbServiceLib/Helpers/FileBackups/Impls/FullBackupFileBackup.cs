@@ -1,6 +1,8 @@
-﻿using SqlSyncDbServiceLib.ObjectTranfer.Instances;
+﻿using SqlSyncDbServiceLib.Helpers.FileRestores.Impls;
+using SqlSyncDbServiceLib.Helpers.ScriptsDb;
+using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 
-namespace SqlSyncDbServiceLib.Helpers
+namespace SqlSyncDbServiceLib.Helpers.FileBackups.Impls
 {
     public class FullBackupFileBackup : BackupFileBackup
     {
