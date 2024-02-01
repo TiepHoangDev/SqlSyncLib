@@ -1,45 +1,36 @@
-﻿using SqlSyncDbServiceLib.ObjectTranfer.Instances;
-using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
+﻿using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.IO.Compression;
-using System.Runtime.Serialization.Formatters.Binary;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.Helpers
 {
     public abstract class FileRestoreFactory
     {
-        public class HeaderFile
-        {
-            public string ClassType { get; set; }
-            public BackupWorkerState WorkerState { get; set; }
-
-            public HeaderFile(string classType, BackupWorkerState workerState)
-            {
-                ClassType = classType;
-                WorkerState = workerState;
-            }
-
-            public void WriteToStream(Stream outStream)
-            {
-                var binaryFormatter = new BinaryFormatter();
-                binaryFormatter.Serialize(outStream, this);
-                outStream.Flush();
-            }
-
-            public static HeaderFile FromStream(Stream stream)
-            {
-                var binaryFormatter = new BinaryFormatter();
-                var obj = binaryFormatter.Deserialize(stream);
-                return obj as HeaderFile;
-            }
-        }
-
         public const string HeaderEntryName = "header.json";
         private const string DataEntryName = "data.dat";
 
         public abstract HeaderFile Header { get; }
+
+        public static Dictionary<string, Type> GetIFileRestoreClass()
+        {
+            var type = typeof(IFileRestore);
+            var types = AppDomain.CurrentDomain.GetAssemblies()
+                .SelectMany(s => s.GetTypes())
+                .Where(p => type.IsAssignableFrom(p))
+                .ToList();
+            var result = new Dictionary<string, Type>();
+            foreach (var typeClass in types)
+            {
+                result.Add(typeClass.FullName, typeClass);
+            }
+            return result;
+        }
+
+        static Lazy<Dictionary<string, Type>> ClassTypeCached = new Lazy<Dictionary<string, Type>>(GetIFileRestoreClass);
 
         public static async Task<IFileRestore> GetFileRestoreAsync(string pathFileZip)
         {
@@ -49,10 +40,12 @@ namespace SqlSyncDbServiceLib.Helpers
                 var stream = headerEntry.Open();
                 var header = HeaderFile.FromStream(stream) ?? throw new NullReferenceException(nameof(HeaderFile));
 
-                var type = typeof(IFileRestore).Assembly.GetType(header.ClassType) ?? throw new NullReferenceException(nameof(IFileRestore));
-
-                var instance = Activator.CreateInstance(type);
-                return instance as IFileRestore ?? throw new NullReferenceException(nameof(instance));
+                if (ClassTypeCached.Value.TryGetValue(header.ClassType, out var type))
+                {
+                    var instance = Activator.CreateInstance(type);
+                    return instance as IFileRestore ?? throw new NullReferenceException(nameof(instance));
+                }
+                throw new NullReferenceException(nameof(IFileRestore));
             }
         }
 

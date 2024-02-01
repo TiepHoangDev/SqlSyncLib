@@ -28,31 +28,26 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
             //setup client
             using (var client = new HttpClient())
             {
-                client.BaseAddress = new Uri(RestoreConfig.BackupAddress);
-
                 var request = new GetNewBackupRequest()
                 {
                     CurrentVersion = RestoreState.DownloadedVersion,
                     DbId = RestoreConfig.IdBackupWorker,
                 };
-                using (var response = await client.PostAsJsonAsync(GetNewBackupRequest.router, request, cancellationToken))
+                var url = RestoreConfig.GetUrlDownload();
+                using (var response = await client.PostAsJsonAsync(url, request, cancellationToken))
                 {
                     //check response
-                    var body = await response.Content.ReadAsStringAsync();
-                    switch (response.StatusCode)
+                    if (!response.IsSuccessStatusCode)
+                        throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}");
+                   
+                    if (response.StatusCode == HttpStatusCode.NoContent)
                     {
-                        case HttpStatusCode.NoContent:
-                            Debug.WriteLine("not have new file backup");
-                            return default;
-                        case HttpStatusCode.OK:
-                            break;
-                        default:
-                            throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. {body}");
+                        Debug.WriteLine("not have new file backup");
+                        return default;
                     }
 
                     //get version
-                    var backupResponse = JsonConvert.DeserializeObject<GetNewBackupResponse>(body);
-                    var version = backupResponse.Version ?? response.Content.Headers.ContentDisposition?.FileName;
+                    var version = response.Content.Headers.ContentDisposition?.FileName;
                     if (string.IsNullOrWhiteSpace(version))
                     {
                         throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. Unknow filename(=version) of response, that is required of response.");
@@ -62,7 +57,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
                     var file = RestoreConfig.GetFilePathData(version);
                     using (var fs = new FileStream(file, FileMode.Create))
                     {
-                        await backupResponse.FileStream.CopyToAsync(fs);
+                        await response.Content.CopyToAsync(fs);
                         await fs.FlushAsync(cancellationToken);
 
                         return version;

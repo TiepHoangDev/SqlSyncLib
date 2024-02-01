@@ -46,6 +46,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
                 if (filePath != null && File.Exists(filePath))
                 {
                     var fs = File.OpenRead(filePath);
+                    fs.Seek(0, SeekOrigin.Begin);
                     return new GetNewBackupResponse
                     {
                         FileStream = fs,

@@ -1,6 +1,7 @@
 ﻿using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
 using System.Diagnostics;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.Helpers
@@ -33,6 +34,5 @@ namespace SqlSyncDbServiceLib.Helpers
                 LastRun = DateTime.Now;
             }
         }
-
     }
 }

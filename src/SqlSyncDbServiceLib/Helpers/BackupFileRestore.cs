@@ -31,9 +31,7 @@ namespace SqlSyncDbServiceLib.Helpers
             }
             finally
             {
-#if DEBUG0
                 if (File.Exists(tmp)) File.Delete(tmp);
-#endif
             }
         }
     }

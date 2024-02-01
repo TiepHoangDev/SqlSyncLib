@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using Newtonsoft.Json;
+using System.IO;
 using System.Runtime.InteropServices.ComTypes;
 using System.Runtime.Serialization.Formatters.Binary;
 
@@ -12,12 +13,8 @@ namespace SqlSyncDbServiceLib.Helpers
         public virtual bool SaveState(string pathFile)
         {
             if (CurrentVersion == null) return false;
-            using (var fs = new FileStream(pathFile, FileMode.OpenOrCreate))
-            {
-                var binaryFormatter = new BinaryFormatter();
-                binaryFormatter.Serialize(fs, this);
-                fs.Flush();
-            }
+            var json = JsonConvert.SerializeObject(this, Formatting.Indented);
+            File.WriteAllText(pathFile, json);
             return true;
         }
 
@@ -37,12 +34,8 @@ namespace SqlSyncDbServiceLib.Helpers
         {
             if (!File.Exists(filePath)) return default;
 
-            using (var fs = new FileStream(filePath, FileMode.Open))
-            {
-                var binaryFormatter = new BinaryFormatter();
-                var obj = binaryFormatter.Deserialize(fs);
-                return obj as T;
-            }
+            var json =  File.ReadAllText(filePath);
+            return JsonConvert.DeserializeObject<T>(json);
         }
 
     }

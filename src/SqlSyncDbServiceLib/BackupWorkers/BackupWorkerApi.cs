@@ -13,7 +13,7 @@ namespace SqlSyncDbServiceLib.BackupWorkers
     {
         public virtual async Task<bool> BackupFull(BackupWorkerConfig backupConfig, BackupWorkerState backupState)
         {
-            backupConfig.LastRunBackupFull = DateTime.Now;
+            backupState.LastRunBackupFull = DateTime.Now;
 
             var sqlConnectString = backupConfig.SqlConnectString ?? throw new ArgumentNullException(backupConfig.SqlConnectString);
             var newVersion = VersionFactory.Instance.GetNewVersion();

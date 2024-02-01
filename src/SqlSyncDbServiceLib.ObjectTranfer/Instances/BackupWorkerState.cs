@@ -1,4 +1,5 @@
 ﻿using SqlSyncDbServiceLib.Helpers;
+using System;
 
 namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
 {
@@ -6,6 +7,7 @@ namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
     {
         public const string MinVersion_default = "no_min_version";
         public string MinVersion { get; set; } = MinVersion_default;
+        public DateTime? LastRunBackupFull { get; set; }
 
         public override string GetNextVersion<T>(string dir, string currentVersion)
         {

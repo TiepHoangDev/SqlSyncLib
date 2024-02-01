@@ -1,5 +1,7 @@
 ﻿using System;
 using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
 {
@@ -7,7 +9,6 @@ namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
     {
         public TimeSpan ResetAtTime { get; set; } = new TimeSpan(4, 0, 0);
         public DayOfWeek? ResetAtDay { get; set; } = DayOfWeek.Saturday;
-        public DateTime? LastRunBackupFull { get; set; }
 
         public static BackupWorkerConfig Create(string SqlConnectString)
         {
@@ -52,6 +53,5 @@ namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
 
         public BackupWorkerState GetStateByVersion(string version)
             => GetStateByVersion<BackupWorkerState>(version);
-
     }
 }

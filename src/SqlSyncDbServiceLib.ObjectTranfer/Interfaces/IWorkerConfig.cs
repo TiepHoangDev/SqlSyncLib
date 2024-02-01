@@ -2,7 +2,7 @@
 
 namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces
 {
-    public interface IWorkerConfig
+    public interface IWorkerConfig : IValidate
     {
         string Id { get; }
         TimeSpan DelayTime { get; }
