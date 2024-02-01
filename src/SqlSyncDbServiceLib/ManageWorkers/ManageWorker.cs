@@ -1,4 +1,5 @@
 ﻿using SqlSyncDbServiceLib.BackupWorkers;
+using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using SqlSyncDbServiceLib.RestoreWorkers;
 using System;
@@ -12,34 +13,35 @@ namespace SqlSyncDbServiceLib.ManageWorkers
     public class ManageWorker : IManageWorker
     {
         private readonly Dictionary<string, ManageWorkerItem> Workers = new Dictionary<string, ManageWorkerItem>();
+        private ISqlSyncDbServiceLibLogger _dbServiceLibLogger;
         private TaskCompletionSource<bool> _taskCompletionSource = null;
         private CancellationTokenSource _tokenSource = null;
         public ILoaderConfig LoaderConfig { get; private set; }
 
-        public ManageWorker(ILoaderConfig loaderConfig)
+        public ManageWorker(ILoaderConfig loaderConfig, ISqlSyncDbServiceLibLogger dbServiceLibLogger)
         {
+            _dbServiceLibLogger = dbServiceLibLogger;
             _taskCompletionSource = new TaskCompletionSource<bool>();
             _tokenSource = new CancellationTokenSource();
             _tokenSource.Token.Register(() => _taskCompletionSource.TrySetCanceled());
             LoaderConfig = loaderConfig;
-            Init();
         }
 
-        private void Init()
+        private void ReloadWorders()
         {
-            foreach (var backupWorkerConfig in LoaderConfig.BackupWorkerConfigs)
+            var workers = new List<IWorker>();
+            workers.AddRange(LoaderConfig.BackupWorkerConfigs.Select(x => new BackupWorker(_dbServiceLibLogger) { BackupConfig = x }));
+            workers.AddRange(LoaderConfig.RestoreWorkerConfigs.Select(x => new RestoreWorker(_dbServiceLibLogger) { RestoreConfig = x }));
+            foreach (var worker in workers)
             {
-                AddWorker(new BackupWorker
+                try
                 {
-                    BackupConfig = backupWorkerConfig
-                });
-            }
-            foreach (var restoreWorkerConfig in LoaderConfig.RestoreWorkerConfigs)
-            {
-                AddWorker(new RestoreWorker
+                    AddWorker(worker);
+                }
+                catch (Exception ex)
                 {
-                    RestoreConfig = restoreWorkerConfig
-                });
+                    _dbServiceLibLogger.Log(ex);
+                }
             }
         }
 
@@ -85,11 +87,13 @@ namespace SqlSyncDbServiceLib.ManageWorkers
             var workerItem = new ManageWorkerItem(worker, tokenSource);
             Workers.Add(id, workerItem);
             worker.RunAsync(tokenSource.Token);
+            _dbServiceLibLogger.Log($"AddWorker {worker.Id} success");
             return true;
         }
 
         public async Task<bool> RunAsync(CancellationToken cancellationToken)
         {
+            ReloadWorders();
             cancellationToken.Register(() => _tokenSource.Cancel());
             return await _taskCompletionSource.Task;
         }

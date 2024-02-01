@@ -10,7 +10,7 @@ namespace SqlSyncDbServiceLib.BackupWorkers
 {
     public class BackupWorker : WorkerBase
     {
-        public BackupWorker(ISqlSyncDbServiceLibLogger logger = null) : base(logger)
+        public BackupWorker(ISqlSyncDbServiceLibLogger logger) : base(logger)
         {
         }
 

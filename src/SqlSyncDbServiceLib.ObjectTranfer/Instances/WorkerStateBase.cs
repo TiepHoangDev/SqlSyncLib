@@ -34,5 +34,12 @@ namespace SqlSyncDbServiceLib.Helpers
                 LastRun = DateTime.Now;
             }
         }
+
+        public virtual string SuccessString => IsSuccess ?? false ? "OK" : "FAILED";
+
+        public override string ToString()
+        {
+            return $"[{LastRun:HH:mm:ss.fff}] [{SuccessString}]{Message}";
+        }
     }
 }
