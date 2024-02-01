@@ -14,7 +14,7 @@ namespace SqlSyncDbServiceLib.BackupWorkers
         {
         }
 
-        public override string Name => $"BackupWorker-{BackupConfig.DbName}";
+        public override string Name => $"BackupWorker-{BackupConfig?.DbName}";
         public override IWorkerConfig Config => BackupConfig;
         public BackupWorkerConfig BackupConfig { get; set; } = new BackupWorkerConfig();
         public BackupWorkerState BackupState { get; } = new BackupWorkerState();
@@ -43,7 +43,7 @@ namespace SqlSyncDbServiceLib.BackupWorkers
                             await BackupLogAsync();
                         }
                     });
-                    CallHookAsync("BackupSuccess", BackupState);
+                    CallHookAsync(Name, BackupState);
                 }
 
                 if (cancellationToken.IsCancellationRequested) break;

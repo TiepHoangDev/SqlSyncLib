@@ -15,7 +15,7 @@ namespace SqlSyncDbServiceLib.Helpers
         protected WorkerBase(ISqlSyncDbServiceLibLogger logger)
         {
             this.logger = logger;
-            Hooks.Add(new LoggerWorkerHook(logger));
+            Hooks.Add(new FailedLoggerWorkerHook(logger));
         }
 
         public virtual List<IWorkerHook> Hooks { get; } = new List<IWorkerHook>();

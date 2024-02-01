@@ -17,7 +17,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
         {
         }
 
-        public override string Name => "RestoreWorker";
+        public override string Name => $"RestoreWorker-{RestoreConfig?.DbName}";
         public override IWorkerConfig Config => RestoreConfig;
         public RestoreWorkerConfig RestoreConfig { get; set; } = new RestoreWorkerConfig();
         public RestoreWorkerState RestoreState { get; set; } = new RestoreWorkerState();
@@ -34,7 +34,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
                 {
                     await State.UpdateStateByProcess(() => DownloadNewBackupAsync(cancellationToken));
                     await State.UpdateStateByProcess(() => RestoreAsync(cancellationToken));
-                    CallHookAsync("RestoreWorker", RestoreState);
+                    CallHookAsync(Name, RestoreState);
                 }
 
                 if (cancellationToken.IsCancellationRequested) break;
