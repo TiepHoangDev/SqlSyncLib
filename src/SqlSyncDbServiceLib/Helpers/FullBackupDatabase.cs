@@ -1,5 +1,5 @@
 ﻿using FastQueryLib;
-using Microsoft.Data.SqlClient;
+using System.Data.SqlClient;
 using System;
 using System.IO;
 using System.Linq;

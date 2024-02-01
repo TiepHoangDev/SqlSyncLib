@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+﻿using System.Data.SqlClient;
 using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces

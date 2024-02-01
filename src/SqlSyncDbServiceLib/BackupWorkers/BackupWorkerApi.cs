@@ -1,5 +1,5 @@
 ﻿using FastQueryLib;
-using Microsoft.Data.SqlClient;
+using System.Data.SqlClient;
 using SqlSyncDbServiceLib.Helpers;
 using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 using System;

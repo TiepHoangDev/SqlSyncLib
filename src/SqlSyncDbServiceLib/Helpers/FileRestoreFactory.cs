@@ -3,7 +3,7 @@ using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Text.Json;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Threading.Tasks;
 
 namespace SqlSyncDbServiceLib.Helpers
@@ -20,6 +20,20 @@ namespace SqlSyncDbServiceLib.Helpers
                 ClassType = classType;
                 WorkerState = workerState;
             }
+
+            public void WriteToStream(Stream outStream)
+            {
+                var binaryFormatter = new BinaryFormatter();
+                binaryFormatter.Serialize(outStream, this);
+                outStream.Flush();
+            }
+
+            public static HeaderFile FromStream(Stream stream)
+            {
+                var binaryFormatter = new BinaryFormatter();
+                var obj = binaryFormatter.Deserialize(stream);
+                return obj as HeaderFile;
+            }
         }
 
         public const string HeaderEntryName = "header.json";
@@ -32,8 +46,8 @@ namespace SqlSyncDbServiceLib.Helpers
             using (var zip = ZipFile.Open(pathFileZip, ZipArchiveMode.Read))
             {
                 var headerEntry = zip.GetEntry(HeaderEntryName) ?? throw new Exception($"File not correct format: Not have {HeaderEntryName}");
-                var json = await new StreamReader(headerEntry.Open()).ReadToEndAsync();
-                var header = JsonSerializer.Deserialize<HeaderFile>(json) ?? throw new NullReferenceException(nameof(HeaderFile));
+                var stream = headerEntry.Open();
+                var header = HeaderFile.FromStream(stream) ?? throw new NullReferenceException(nameof(HeaderFile));
 
                 var type = typeof(IFileRestore).Assembly.GetType(header.ClassType) ?? throw new NullReferenceException(nameof(IFileRestore));
 
@@ -55,11 +69,9 @@ namespace SqlSyncDbServiceLib.Helpers
         {
             using (var zip = ZipFile.Open(pathFileZip, ZipArchiveMode.Read))
             {
-
                 var entry = zip.GetEntry(HeaderEntryName);
                 if (entry == null) return default;
-                var json = new StreamReader(entry.Open()).ReadToEnd();
-                return JsonSerializer.Deserialize<HeaderFile>(json);
+                return HeaderFile.FromStream(entry.Open());
             }
         }
 
@@ -75,14 +87,9 @@ namespace SqlSyncDbServiceLib.Helpers
 
         protected virtual void AppendHeader(ZipArchive zip)
         {
-            var json = JsonSerializer.Serialize(Header);
             using (var fs = zip.CreateEntry(HeaderEntryName).Open())
             {
-                using (var writer = new StreamWriter(fs))
-                {
-                    writer.Write(json);
-                    writer.Flush();
-                }
+                Header.WriteToStream(fs);
             }
         }
 

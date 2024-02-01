@@ -1,5 +1,6 @@
 ﻿using System.IO;
-using System.Text.Json;
+using System.Runtime.InteropServices.ComTypes;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SqlSyncDbServiceLib.Helpers
 {
@@ -11,11 +12,12 @@ namespace SqlSyncDbServiceLib.Helpers
         public virtual bool SaveState(string pathFile)
         {
             if (CurrentVersion == null) return false;
-            var json = JsonSerializer.Serialize(this, new JsonSerializerOptions
+            using (var fs = new FileStream(pathFile, FileMode.OpenOrCreate))
             {
-                WriteIndented = true
-            });
-            File.WriteAllText(pathFile, json);
+                var binaryFormatter = new BinaryFormatter();
+                binaryFormatter.Serialize(fs, this);
+                fs.Flush();
+            }
             return true;
         }
 
@@ -35,8 +37,12 @@ namespace SqlSyncDbServiceLib.Helpers
         {
             if (!File.Exists(filePath)) return default;
 
-            var json = File.ReadAllText(filePath);
-            return JsonSerializer.Deserialize<T>(json);
+            using (var fs = new FileStream(filePath, FileMode.Open))
+            {
+                var binaryFormatter = new BinaryFormatter();
+                var obj = binaryFormatter.Deserialize(fs);
+                return obj as T;
+            }
         }
 
     }

@@ -1,5 +1,5 @@
 ﻿using FastQueryLib;
-using Microsoft.Data.SqlClient;
+using System.Data.SqlClient;
 using System.IO;
 using System.Threading.Tasks;
 
