@@ -28,11 +28,13 @@ namespace SqlSyncDbServiceLib.BackupWorkers
             var pathFileFullBackUp = backupConfig.GetPathBackupFull(newVersion);
             var pathFileLogBackUp = backupConfig.GetPathFile(newVersion, newVersion);
 
-            // set single user => backup log => backup full => set mutil user.
+            // backup log => backup full
             using (var dbConnection = SqlServerExecuterHelper.CreateConnection(sqlConnectString))
             {
                 dbConnection.Open();
-                await dbConnection.CreateFastQuery().UseSingleUserModeAsync(async fastquery =>
+                //await dbConnection.CreateFastQuery().UseSingleUserModeAsync(async fastquery =>
+                //{
+                using (var fastquery = dbConnection.CreateFastQuery())
                 {
                     var fullBackupFileBackup = new FullBackupFileBackup(backupState);
                     if (await fullBackupFileBackup.BackupDatabase.CheckHasBackupFullAsync(fastquery))
@@ -40,7 +42,8 @@ namespace SqlSyncDbServiceLib.BackupWorkers
                         await new LogBackupFileBackup(backupState).BackupAsync(dbConnection, pathFileLogBackUp);
                     }
                     success = await fullBackupFileBackup.BackupAsync(dbConnection, pathFileFullBackUp);
-                });
+                }
+                //});
             }
 
             if (success)

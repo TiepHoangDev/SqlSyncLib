@@ -56,7 +56,17 @@ END")
                 SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(SERVER, DATABASE).ToString()
             }
         };
-        if (Directory.Exists(_backup.BackupConfig.DirRoot)) Directory.Delete(_backup.BackupConfig.DirRoot, true);
+        if (Directory.Exists(_backup.BackupConfig.DirRoot))
+        {
+            try
+            {
+                Directory.Delete(_backup.BackupConfig.DirRoot, true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
 
         Mock<IRestoreDownload> mock = new();
         mock.Setup(d => d.DownloadFileAsync(It.IsAny<RestoreWorkerConfig>(), It.IsAny<RestoreWorkerState>(), It.IsAny<CancellationToken>()))
@@ -72,7 +82,7 @@ END")
                 }
                 return Task.FromResult(version);
             });
-        
+
         _restore = new RestoreWorker(loggerMock.Object)
         {
             RestoreConfig = new RestoreWorkerConfig

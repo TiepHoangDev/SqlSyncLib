@@ -26,14 +26,13 @@ namespace SqlSyncDbServiceLib.Helpers.ScriptsDb
             var dbName = sqlConnection.Database;
             using (var faster = sqlConnection.CreateFastQuery())
             {
-                await faster.UseSingleUserModeAsync(async f =>
-                {
-                    var fullPath = Path.GetFullPath(pathFile);
-                    var queryRestore = GetQueryRestore(dbName, fullPath, minVersion);
-                    await sqlConnection.CreateFastQuery()
-                       .WithQuery(queryRestore)
-                       .ExecuteNonQueryAsync();
-                });
+                //await faster.UseSingleUserModeAsync(async f =>
+                //{
+                var fullPath = Path.GetFullPath(pathFile);
+                var queryRestore = GetQueryRestore(dbName, fullPath, minVersion);
+                await faster.WithQuery(queryRestore)
+                   .ExecuteNonQueryAsync();
+                //});
                 return true;
             }
         }
