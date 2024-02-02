@@ -10,10 +10,6 @@ namespace SqlSyncDbServiceLib.BackupWorkers
 {
     public class BackupWorker : WorkerBase
     {
-        public BackupWorker(ISqlSyncDbServiceLibLogger logger) : base(logger)
-        {
-        }
-
         public override string Name => $"BackupWorker-{BackupConfig?.DbName}";
         public override IWorkerConfig Config => BackupConfig;
         public BackupWorkerConfig BackupConfig { get; set; } = new BackupWorkerConfig();
@@ -21,7 +17,7 @@ namespace SqlSyncDbServiceLib.BackupWorkers
 
         public override IWorkerState State => BackupState;
 
-        protected override void WriteLine(string msg) => Debug.WriteLine($"\tRESTORE: {msg}");
+        protected override void DebugWriteLine(string msg) => Debug.WriteLine($"\tRESTORE: {msg}");
 
         public override async Task<bool> RunAsync(CancellationToken cancellationToken)
         {

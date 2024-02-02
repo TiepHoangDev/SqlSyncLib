@@ -1,6 +1,8 @@
-﻿using System;
+﻿using Newtonsoft.Json;
+using System;
 using System.IO;
 using System.Net.Http;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -45,17 +47,11 @@ namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
             {
                 using (var http = new HttpClient())
                 {
-                    var request = new HttpRequestMessage
-                    {
-                        Method = HttpMethod.Head,
-                        RequestUri = RequestUri
-                    };
-                    var res = await http.SendAsync(request, cancellationToken);
-                    if (!res.IsSuccessStatusCode)
+                    var res = await http.GetAsync(RequestUri, cancellationToken);
+                    if (res.StatusCode == System.Net.HttpStatusCode.NotFound)
                     {
                         throw new Exception($"Expect Url download is: {RequestUri}. that endpoint is not work, please check if backup sevrer is running or ignore if you sure that correct! Detail response: {(int)res.StatusCode} {res.StatusCode} {res.ReasonPhrase}");
                     }
-                    res.EnsureSuccessStatusCode();
                 }
             }
             catch (Exception ex)
@@ -66,7 +62,7 @@ namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
 
         public Uri GetUrlDownload()
         {
-            return new Uri($"{BackupAddress}/{GetNewBackupRequest.router}");
+            return new Uri(new Uri(BackupAddress), GetNewBackupRequest.router);
         }
     }
 }

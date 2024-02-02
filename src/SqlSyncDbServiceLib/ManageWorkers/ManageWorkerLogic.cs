@@ -12,13 +12,11 @@ namespace SqlSyncDbServiceLib.ManageWorkers
 {
     public class ManageWorkerLogic : IManageWorkerLogic
     {
-        readonly ISqlSyncDbServiceLibLogger logger;
         private readonly IManageWorker _manageWorker;
 
-        public ManageWorkerLogic(IManageWorker manageWorker, ISqlSyncDbServiceLibLogger logger)
+        public ManageWorkerLogic(IManageWorker manageWorker)
         {
             _manageWorker = manageWorker;
-            this.logger = logger;
         }
 
         public List<IWorker> GetWorkers(List<string> ids)
@@ -38,7 +36,11 @@ namespace SqlSyncDbServiceLib.ManageWorkers
         /// <returns></returns>
         public GetNewBackupResponse GetNewBackup(GetNewBackupRequest getFileBackup)
         {
-            var workers = GetWorkers(new List<string> { getFileBackup.DbId });
+            if (string.IsNullOrWhiteSpace(getFileBackup?.IdBackupWorker))
+            {
+                throw new Exception($"Request missing value of {nameof(GetNewBackupRequest.IdBackupWorker)}");
+            }
+            var workers = GetWorkers(new List<string> { getFileBackup.IdBackupWorker });
             var worker = workers.FirstOrDefault();
             if (worker is BackupWorker backup)
             {
@@ -55,7 +57,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
                 }
                 return default;
             }
-            throw new Exception($"Not exist BackupWorker with id = {getFileBackup.DbId}");
+            throw new Exception($"Not exist BackupWorker with id = {getFileBackup.IdBackupWorker}");
         }
 
         protected virtual List<IWorker> ApiAddWorker(IWorker worker)
@@ -69,7 +71,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
 
         public virtual List<IWorker> AddBackupWorker(BackupWorkerConfig config)
         {
-            var worker = new BackupWorker(logger)
+            var worker = new BackupWorker
             {
                 BackupConfig = config,
             };
@@ -78,7 +80,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
 
         public virtual List<IWorker> AddRestoreWorker(RestoreWorkerConfig config)
         {
-            var worker = new RestoreWorker(logger)
+            var worker = new RestoreWorker
             {
                 RestoreConfig = config,
             };

@@ -31,7 +31,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
                 var request = new GetNewBackupRequest()
                 {
                     CurrentVersion = RestoreState.DownloadedVersion,
-                    DbId = RestoreConfig.IdBackupWorker,
+                    IdBackupWorker = RestoreConfig.IdBackupWorker,
                 };
                 var url = RestoreConfig.GetUrlDownload();
                 using (var response = await client.PostAsJsonAsync(url, request, cancellationToken))

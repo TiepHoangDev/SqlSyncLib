@@ -10,11 +10,12 @@ namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
         public TimeSpan ResetAtTime { get; set; } = new TimeSpan(4, 0, 0);
         public DayOfWeek? ResetAtDay { get; set; } = DayOfWeek.Saturday;
 
-        public static BackupWorkerConfig Create(string SqlConnectString)
+        public static BackupWorkerConfig Create(string SqlConnectString, string id)
         {
             return new BackupWorkerConfig
             {
                 SqlConnectString = SqlConnectString,
+                Id = id
             };
         }
 

@@ -13,6 +13,5 @@ namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces
         List<IWorkerHook> Hooks { get; }
         IWorkerConfig Config { get; }
         IWorkerState State { get; }
-        ISqlSyncDbServiceLibLogger Logger { get; }
     }
 }

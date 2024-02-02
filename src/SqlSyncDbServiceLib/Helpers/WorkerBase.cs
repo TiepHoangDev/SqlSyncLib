@@ -10,12 +10,9 @@ namespace SqlSyncDbServiceLib.Helpers
 {
     public abstract class WorkerBase : IWorker
     {
-        protected readonly ISqlSyncDbServiceLibLogger logger;
-
-        protected WorkerBase(ISqlSyncDbServiceLibLogger logger)
+        protected WorkerBase()
         {
-            this.logger = logger;
-            Hooks.Add(new FailedLoggerWorkerHook(logger));
+            Hooks.Add(new ConsoleLogHook());
         }
 
         public virtual List<IWorkerHook> Hooks { get; } = new List<IWorkerHook>();
@@ -24,7 +21,6 @@ namespace SqlSyncDbServiceLib.Helpers
         public abstract string Name { get; }
         public abstract IWorkerConfig Config { get; }
         public abstract IWorkerState State { get; }
-        public virtual ISqlSyncDbServiceLibLogger Logger => logger;
         public abstract Task<bool> RunAsync(CancellationToken cancellationToken);
 
         public virtual void Dispose()
@@ -40,7 +36,7 @@ namespace SqlSyncDbServiceLib.Helpers
             }
         }
 
-        protected virtual void WriteLine(string msg)
+        protected virtual void DebugWriteLine(string msg)
         {
             Debug.WriteLine($"\t{msg}");
         }

@@ -10,9 +10,9 @@ namespace SqlSyncDbServiceLib.LoggerWorkers
     /// </summary>
     public class FailedLoggerWorkerHook : IWorkerHook
     {
-        readonly ISqlSyncDbServiceLibLogger _logger;
+        readonly IDbServiceLibLogger _logger;
 
-        public FailedLoggerWorkerHook(ISqlSyncDbServiceLibLogger logger)
+        public FailedLoggerWorkerHook(IDbServiceLibLogger logger)
         {
             _logger = logger;
         }
@@ -33,8 +33,6 @@ namespace SqlSyncDbServiceLib.LoggerWorkers
                     return;
                 }
             }
-            
-            Debug.WriteLine($"{name}>> {data}");
             await Task.CompletedTask;
         }
     }

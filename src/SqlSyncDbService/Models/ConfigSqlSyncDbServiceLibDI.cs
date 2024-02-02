@@ -9,7 +9,7 @@ namespace SqlSyncDbService.Models
             return default;
         }
 
-        public ISqlSyncDbServiceLibLogger GetISqlSyncDbServiceLibLogger(IServiceProvider provider)
+        public IDbServiceLibLogger GetISqlSyncDbServiceLibLogger(IServiceProvider provider)
         {
             return provider.GetRequiredService<SqlSyncDbServiceLibLogger>();
         }

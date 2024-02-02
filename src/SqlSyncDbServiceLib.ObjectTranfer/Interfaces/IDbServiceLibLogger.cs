@@ -1,6 +1,6 @@
 ﻿namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces
 {
-    public interface ISqlSyncDbServiceLibLogger
+    public interface IDbServiceLibLogger
     {
         void Log(object message);
     }

@@ -4,7 +4,7 @@ namespace SqlSyncDbServiceLib.ObjectTranfer.Interfaces
 {
     public interface IConfigSqlSyncDbServiceLibDI
     {
-        ISqlSyncDbServiceLibLogger GetISqlSyncDbServiceLibLogger(IServiceProvider provider);
+        IDbServiceLibLogger GetISqlSyncDbServiceLibLogger(IServiceProvider provider);
         ILoaderConfig GetILoaderConfig(IServiceProvider provider);
     }
 

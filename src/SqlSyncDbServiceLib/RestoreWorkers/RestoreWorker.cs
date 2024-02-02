@@ -13,10 +13,6 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
 {
     public class RestoreWorker : WorkerBase
     {
-        public RestoreWorker(ISqlSyncDbServiceLibLogger logger) : base(logger)
-        {
-        }
-
         public override string Name => $"RestoreWorker-{RestoreConfig?.DbName}";
         public override IWorkerConfig Config => RestoreConfig;
         public RestoreWorkerConfig RestoreConfig { get; set; } = new RestoreWorkerConfig();
@@ -24,7 +20,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
         public override IWorkerState State => RestoreState;
         public IRestoreDownload RestoreDownload { get; set; } = new HttpRestoreDonwload();
 
-        protected override void WriteLine(string msg) => Debug.WriteLine($"\tRESTORE: {msg}");
+        protected override void DebugWriteLine(string msg) => Debug.WriteLine($"\tRESTORE: {msg}");
 
         public override async Task<bool> RunAsync(CancellationToken cancellationToken)
         {
@@ -63,7 +59,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
                     {
                         throw new Exception($"[{restore.Name}] Restore file failed on {RestoreState}");
                     }
-                    WriteLine($"[{restore.Name}] Success {RestoreState.CurrentVersion}");
+                    DebugWriteLine($"[{restore.Name}] Success {RestoreState.CurrentVersion}");
                 }
 
                 //update state
@@ -99,7 +95,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
                     CurrentVersion = version,
                     NextVersion = null,
                 });
-                WriteLine($"{RestoreState.DownloadedVersion} => {version}");
+                DebugWriteLine($"{RestoreState.DownloadedVersion} => {version}");
 
                 //update state
                 RestoreState.DownloadedVersion = version;

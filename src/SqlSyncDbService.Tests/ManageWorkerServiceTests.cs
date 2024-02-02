@@ -45,11 +45,11 @@ END")
 
         _tokenSource = new CancellationTokenSource();
 
-        Mock<ISqlSyncDbServiceLibLogger> loggerMock = new();
+        Mock<IDbServiceLibLogger> loggerMock = new();
         loggerMock.Setup(d => d.Log(It.IsAny<object>()))
             .Callback<object>(o => Debug.WriteLine(o));
 
-        _backup = new BackupWorker(loggerMock.Object)
+        _backup = new BackupWorker
         {
             BackupConfig = new BackupWorkerConfig
             {
@@ -83,7 +83,7 @@ END")
                 return Task.FromResult(version);
             });
 
-        _restore = new RestoreWorker(loggerMock.Object)
+        _restore = new RestoreWorker
         {
             RestoreConfig = new RestoreWorkerConfig
             {

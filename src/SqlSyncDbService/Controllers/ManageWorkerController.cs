@@ -23,7 +23,7 @@ namespace SqlSyncDbService.Controllers
         public List<IWorker> AddRestoreWorker(RestoreWorkerConfig config)
             => _manageWorkerLogic.AddRestoreWorker(config);
 
-        [HttpPost, Route("[action]")]
+        [HttpPost, HttpHead, HttpGet, Route("[action]")]
         public IActionResult GetNewBackupApi(GetNewBackupRequest getFileBackup)
         {
             var info = GetNewBackup(getFileBackup);

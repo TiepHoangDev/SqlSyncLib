@@ -1,4 +1,5 @@
 ﻿using SqlSyncDbServiceLib.BackupWorkers;
+using SqlSyncDbServiceLib.LoggerWorkers;
 using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using SqlSyncDbServiceLib.RestoreWorkers;
@@ -13,12 +14,12 @@ namespace SqlSyncDbServiceLib.ManageWorkers
     public class ManageWorker : IManageWorker
     {
         private readonly Dictionary<string, ManageWorkerItem> Workers = new Dictionary<string, ManageWorkerItem>();
-        private ISqlSyncDbServiceLibLogger Logger;
-        private TaskCompletionSource<bool> _taskCompletionSource = null;
-        private CancellationTokenSource _tokenSource = null;
+        private readonly IDbServiceLibLogger Logger = null;
+        private readonly TaskCompletionSource<bool> _taskCompletionSource = null;
+        private readonly CancellationTokenSource _tokenSource = null;
         public ILoaderConfig LoaderConfig { get; private set; }
 
-        public ManageWorker(ILoaderConfig loaderConfig, ISqlSyncDbServiceLibLogger dbServiceLibLogger)
+        public ManageWorker(ILoaderConfig loaderConfig, IDbServiceLibLogger dbServiceLibLogger)
         {
             Logger = dbServiceLibLogger;
             _taskCompletionSource = new TaskCompletionSource<bool>();
@@ -32,12 +33,12 @@ namespace SqlSyncDbServiceLib.ManageWorkers
             var workers = new List<IWorker>();
             if (LoaderConfig == null)
             {
-                Logger.Log($"[WARNING] {LoaderConfig} is null. It need to save config works to load after restart!");
+                Logger?.Log($"[WARNING] {LoaderConfig} is null. It need to save config works to load after restart!");
                 return;
             }
 
-            workers.AddRange(LoaderConfig.BackupWorkerConfigs.Select(x => new BackupWorker(Logger) { BackupConfig = x }));
-            workers.AddRange(LoaderConfig.RestoreWorkerConfigs.Select(x => new RestoreWorker(Logger) { RestoreConfig = x }));
+            workers.AddRange(LoaderConfig.BackupWorkerConfigs.Select(x => new BackupWorker { BackupConfig = x }));
+            workers.AddRange(LoaderConfig.RestoreWorkerConfigs.Select(x => new RestoreWorker { RestoreConfig = x }));
             foreach (var worker in workers)
             {
                 try
@@ -46,7 +47,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
                 }
                 catch (Exception ex)
                 {
-                    Logger.Log(ex);
+                    Logger?.Log(ex);
                 }
             }
         }
@@ -82,18 +83,26 @@ namespace SqlSyncDbServiceLib.ManageWorkers
 
         public bool AddWorker(IWorker worker)
         {
-            var cancellation = _tokenSource.Token;
-            var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
-
+            //check
             var id = worker?.Id ?? throw new Exception("empty-id");
             if (Workers.ContainsKey(id))
             {
                 throw new Exception($"worker-already-exist: {id}");
             }
+
+            //add hook default to write log
+            worker.Hooks.Add(new FailedLoggerWorkerHook(Logger));
+
+            //add worker
+            var cancellation = _tokenSource.Token;
+            var tokenSource = CancellationTokenSource.CreateLinkedTokenSource(cancellation);
             var workerItem = new ManageWorkerItem(worker, tokenSource);
             Workers.Add(id, workerItem);
+
+            //run
             worker.RunAsync(tokenSource.Token);
-            Logger.Log($"AddWorker {worker.Id} success");
+            Logger?.Log($"AddWorker {worker.Id} success");
+
             return true;
         }
 
@@ -119,9 +128,12 @@ namespace SqlSyncDbServiceLib.ManageWorkers
 
         public List<IWorker> GetWorkers(List<string> ids)
         {
-            return Workers.Values
-                .Where(q => ids?.Any() != true || ids.Contains(q.Worker.Id))
-                .Select(q => q.Worker).ToList();
+            var data = Workers.Values.Select(q => q.Worker);
+            if (ids?.Any() ?? false)
+            {
+                data = data.Where(q => ids.Contains(q.Id));
+            }
+            return data.ToList();
         }
 
         public bool RemoveWorker(string id)
@@ -129,4 +141,5 @@ namespace SqlSyncDbServiceLib.ManageWorkers
             return RemoveWorker(q => q.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
         }
     }
+
 }

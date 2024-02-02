@@ -2,7 +2,7 @@
 
 namespace SqlSyncDbService.Models
 {
-    public class SqlSyncDbServiceLibLogger : ISqlSyncDbServiceLibLogger
+    public class SqlSyncDbServiceLibLogger : IDbServiceLibLogger
     {
         private readonly ILogger<SqlSyncDbServiceLibLogger> _logger;
 
