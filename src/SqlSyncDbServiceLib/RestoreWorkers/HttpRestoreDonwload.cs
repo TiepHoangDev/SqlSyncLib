@@ -38,8 +38,11 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
                 {
                     //check response
                     if (!response.IsSuccessStatusCode)
-                        throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}");
-                   
+                    {
+                        var body = await response.Content.ReadAsStringAsync();
+                        throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri} body={body}");
+                    }
+
                     if (response.StatusCode == HttpStatusCode.NoContent)
                     {
                         Debug.WriteLine("not have new file backup");
@@ -50,7 +53,8 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
                     var version = response.Content.Headers.ContentDisposition?.FileName;
                     if (string.IsNullOrWhiteSpace(version))
                     {
-                        throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. Unknow filename(=version) of response, that is required of response.");
+                        var body = await response.Content.ReadAsStringAsync();
+                        throw new Exception($"{response.StatusCode}/{response.RequestMessage?.Method}: {response.RequestMessage?.RequestUri}. Unknow filename(is version) of response, that is required of response. body={body}");
                     }
 
                     //save file

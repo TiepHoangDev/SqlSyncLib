@@ -1,5 +1,6 @@
 ﻿using Newtonsoft.Json;
 using System;
+using System.Data.SqlClient;
 using System.IO;
 using System.Net.Http;
 using System.Text;
@@ -14,13 +15,14 @@ namespace SqlSyncDbServiceLib.ObjectTranfer.Instances
         public string BackupAddress { get; set; }
         public int MaxFileDownload { get; set; } = 50;
 
-        public static RestoreWorkerConfig Create(string SqlConnectString, string BackupAddress, string IdBackupWorker)
+        public static RestoreWorkerConfig Create(string SqlConnectString, string BackupAddress, string IdBackupWorker, string id = null)
         {
             return new RestoreWorkerConfig
             {
                 BackupAddress = BackupAddress,
                 IdBackupWorker = IdBackupWorker,
                 SqlConnectString = SqlConnectString,
+                Id = id ?? $"{IdBackupWorker}_restore",
             };
         }
 

@@ -20,7 +20,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
         public override IWorkerState State => RestoreState;
         public IRestoreDownload RestoreDownload { get; set; } = new HttpRestoreDonwload();
 
-        protected override void DebugWriteLine(string msg) => Debug.WriteLine($"\tRESTORE: {msg}");
+        protected override void DebugWriteLine(string msg) => Debug.WriteLine($"----> RESTORE {Name}: {msg}");
 
         public override async Task<bool> RunAsync(CancellationToken cancellationToken)
         {
@@ -29,6 +29,7 @@ namespace SqlSyncDbServiceLib.RestoreWorkers
                 if (RestoreConfig.IsAuto)
                 {
                     await State.UpdateStateByProcess(() => DownloadNewBackupAsync(cancellationToken));
+                    CallHookAsync(Name, RestoreState);
                     await State.UpdateStateByProcess(() => RestoreAsync(cancellationToken));
                     CallHookAsync(Name, RestoreState);
                 }
