@@ -13,14 +13,14 @@ namespace SqlSyncDbServiceLib.ManageWorkers
     public class ManageWorker : IManageWorker
     {
         private readonly Dictionary<string, ManageWorkerItem> Workers = new Dictionary<string, ManageWorkerItem>();
-        private ISqlSyncDbServiceLibLogger _dbServiceLibLogger;
+        private ISqlSyncDbServiceLibLogger Logger;
         private TaskCompletionSource<bool> _taskCompletionSource = null;
         private CancellationTokenSource _tokenSource = null;
         public ILoaderConfig LoaderConfig { get; private set; }
 
         public ManageWorker(ILoaderConfig loaderConfig, ISqlSyncDbServiceLibLogger dbServiceLibLogger)
         {
-            _dbServiceLibLogger = dbServiceLibLogger;
+            Logger = dbServiceLibLogger;
             _taskCompletionSource = new TaskCompletionSource<bool>();
             _tokenSource = new CancellationTokenSource();
             _tokenSource.Token.Register(() => _taskCompletionSource.TrySetCanceled());
@@ -30,8 +30,14 @@ namespace SqlSyncDbServiceLib.ManageWorkers
         private void ReloadWorders()
         {
             var workers = new List<IWorker>();
-            workers.AddRange(LoaderConfig.BackupWorkerConfigs.Select(x => new BackupWorker(_dbServiceLibLogger) { BackupConfig = x }));
-            workers.AddRange(LoaderConfig.RestoreWorkerConfigs.Select(x => new RestoreWorker(_dbServiceLibLogger) { RestoreConfig = x }));
+            if (LoaderConfig == null)
+            {
+                Logger.Log($"[WARNING] {LoaderConfig} is null. It need to save config works to load after restart!");
+                return;
+            }
+
+            workers.AddRange(LoaderConfig.BackupWorkerConfigs.Select(x => new BackupWorker(Logger) { BackupConfig = x }));
+            workers.AddRange(LoaderConfig.RestoreWorkerConfigs.Select(x => new RestoreWorker(Logger) { RestoreConfig = x }));
             foreach (var worker in workers)
             {
                 try
@@ -40,7 +46,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
                 }
                 catch (Exception ex)
                 {
-                    _dbServiceLibLogger.Log(ex);
+                    Logger.Log(ex);
                 }
             }
         }
@@ -87,7 +93,7 @@ namespace SqlSyncDbServiceLib.ManageWorkers
             var workerItem = new ManageWorkerItem(worker, tokenSource);
             Workers.Add(id, workerItem);
             worker.RunAsync(tokenSource.Token);
-            _dbServiceLibLogger.Log($"AddWorker {worker.Id} success");
+            Logger.Log($"AddWorker {worker.Id} success");
             return true;
         }
 
