@@ -1,8 +1,10 @@
 ﻿using FastQueryLib;
+using System.Data.SqlClient;
 using Moq;
-using SqlSyncDbService.Workers.BackupWorkers;
-using SqlSyncDbService.Workers.RestoreWorkers;
-using SqlSyncDbService.Workers.BackupWorkers;
+using SqlSyncDbServiceLib.BackupWorkers;
+using SqlSyncDbServiceLib.ObjectTranfer.Instances;
+using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
+using SqlSyncDbServiceLib.RestoreWorkers;
 using System.Diagnostics;
 
 namespace SqlSyncDbService.Tests;
@@ -21,11 +23,31 @@ public class ManageWorkerServiceTests
     readonly string DATABASE = "dbX";
 
     [OneTimeSetUp]
-    public void Setup()
+    public async Task Setup()
     {
         Trace.Listeners.Add(new ConsoleTraceListener());
 
+        //create db
+        var masterConnectionString = SqlServerExecuterHelper.CreateConnectionString(SERVER, "master").ToString();
+        using var fastQuery = await new SqlConnection(masterConnectionString).CreateFastQuery()
+             .WithQuery("IF NOT EXISTS (SELECT 1 FROM sys.databases WHERE name = 'dbX') BEGIN CREATE DATABASE dbX; END")
+             .ExecuteNonQueryAsync();
+
+        using var fastQuery2 = await new SqlConnection(SqlServerExecuterHelper.CreateConnectionString(SERVER, "dbX").ToString()).CreateFastQuery()
+             .WithQuery(@"IF NOT EXISTS (SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_NAME = 'Products')
+BEGIN
+    CREATE TABLE Products (
+        ID INT IDENTITY(1,1) PRIMARY KEY,
+        CreateTime DATETIME
+    );
+END")
+             .ExecuteNonQueryAsync();
+
         _tokenSource = new CancellationTokenSource();
+
+        Mock<IDbServiceLibLogger> loggerMock = new();
+        loggerMock.Setup(d => d.Log(It.IsAny<object>()))
+            .Callback<object>(o => Debug.WriteLine(o));
 
         _backup = new BackupWorker
         {
@@ -34,7 +56,17 @@ public class ManageWorkerServiceTests
                 SqlConnectString = SqlServerExecuterHelper.CreateConnectionString(SERVER, DATABASE).ToString()
             }
         };
-        if (Directory.Exists(_backup.BackupConfig.DirRoot)) Directory.Delete(_backup.BackupConfig.DirRoot, true);
+        if (Directory.Exists(_backup.BackupConfig.DirRoot))
+        {
+            try
+            {
+                Directory.Delete(_backup.BackupConfig.DirRoot, true);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine(ex);
+            }
+        }
 
         Mock<IRestoreDownload> mock = new();
         mock.Setup(d => d.DownloadFileAsync(It.IsAny<RestoreWorkerConfig>(), It.IsAny<RestoreWorkerState>(), It.IsAny<CancellationToken>()))
@@ -61,7 +93,17 @@ public class ManageWorkerServiceTests
             },
             RestoreDownload = mock.Object
         };
-        if (Directory.Exists(_restore.RestoreConfig.DirRoot)) Directory.Delete(_restore.RestoreConfig.DirRoot, true);
+        if (Directory.Exists(_restore.RestoreConfig.DirRoot))
+        {
+            try
+            {
+                Directory.Delete(_restore.RestoreConfig.DirRoot, true);
+            }
+            catch (Exception ex)
+            {
+                Debug.WriteLine(ex);
+            }
+        }
     }
 
     [Test]

@@ -10,23 +10,30 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
-		<BuildVersion>$([System.DateTime]::UtcNow.ToString("yyyy.M.d.hm"))</BuildVersion>
+		<BuildVersion>$([System.DateTime]::Now.ToString("yyyy.M.d.Hmm"))</BuildVersion>
 		<AssemblyVersion>$(BuildVersion)</AssemblyVersion>
 		<Authors>tiephoangdev</Authors>
 	</PropertyGroup>
 
 	<ItemGroup>
 		<Compile Remove="data\**" />
+		<Compile Remove="logs\**" />
 		<Content Remove="data\**" />
+		<Content Remove="logs\**" />
 		<EmbeddedResource Remove="data\**" />
+		<EmbeddedResource Remove="logs\**" />
 		<None Remove="data\**" />
+		<None Remove="logs\**" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="FastQueryLib" Version="2023.12.19.647" />
 		<PackageReference Include="Microsoft.Extensions.Logging" Version="8.0.0" />
 		<PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.19.4" />
 		<PackageReference Include="NReco.Logging.File" Version="1.1.7" />
 		<PackageReference Include="Swashbuckle.AspNetCore" Version="6.5.0" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\SqlSyncDbServiceLib\SqlSyncDbServiceLib.csproj" />
 	</ItemGroup>
 </Project>
