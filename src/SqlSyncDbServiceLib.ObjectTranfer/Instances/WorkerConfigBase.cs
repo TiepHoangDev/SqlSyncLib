@@ -1,11 +1,11 @@
-﻿using System.Data.SqlClient;
-using SqlSyncDbServiceLib.Helpers;
+﻿using SqlSyncDbServiceLib.Helpers;
 using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
+using System.Data.SqlClient;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Linq;
 
 namespace SqlSyncDbServiceLib
 {

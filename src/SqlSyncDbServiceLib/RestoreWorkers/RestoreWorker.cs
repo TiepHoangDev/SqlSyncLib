@@ -1,13 +1,13 @@
-﻿using System.Data.SqlClient;
-using SqlSyncDbServiceLib.Helpers;
+﻿using SqlSyncDbServiceLib.Helpers;
+using SqlSyncDbServiceLib.Helpers.FileBackups;
 using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using SqlSyncDbServiceLib.Helpers.FileBackups;
 
 namespace SqlSyncDbServiceLib.RestoreWorkers
 {

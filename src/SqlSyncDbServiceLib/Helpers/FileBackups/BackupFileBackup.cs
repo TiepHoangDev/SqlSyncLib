@@ -1,10 +1,10 @@
-﻿using System.Data.SqlClient;
+﻿using SqlSyncDbServiceLib.Helpers.ScriptsDb;
 using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;
+using System.Data.SqlClient;
 using System.IO;
 using System.IO.Compression;
 using System.Threading.Tasks;
-using SqlSyncDbServiceLib.Helpers.ScriptsDb;
 
 namespace SqlSyncDbServiceLib.Helpers.FileBackups
 {

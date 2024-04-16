@@ -1,5 +1,4 @@
-﻿using Newtonsoft.Json;
-using SqlSyncDbServiceLib.ObjectTranfer;
+﻿using SqlSyncDbServiceLib.ObjectTranfer;
 using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using System;

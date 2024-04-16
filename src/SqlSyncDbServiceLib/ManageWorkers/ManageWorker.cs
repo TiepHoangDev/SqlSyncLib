@@ -1,6 +1,5 @@
 ﻿using SqlSyncDbServiceLib.BackupWorkers;
 using SqlSyncDbServiceLib.LoggerWorkers;
-using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using SqlSyncDbServiceLib.RestoreWorkers;
 using System;

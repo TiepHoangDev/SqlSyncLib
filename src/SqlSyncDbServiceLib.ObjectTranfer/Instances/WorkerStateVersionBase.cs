@@ -1,7 +1,5 @@
 ﻿using Newtonsoft.Json;
 using System.IO;
-using System.Runtime.InteropServices.ComTypes;
-using System.Runtime.Serialization.Formatters.Binary;
 
 namespace SqlSyncDbServiceLib.Helpers
 {
@@ -34,7 +32,7 @@ namespace SqlSyncDbServiceLib.Helpers
         {
             if (!File.Exists(filePath)) return default;
 
-            var json =  File.ReadAllText(filePath);
+            var json = File.ReadAllText(filePath);
             return JsonConvert.DeserializeObject<T>(json);
         }
 

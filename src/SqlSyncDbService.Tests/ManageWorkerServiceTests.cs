@@ -1,10 +1,10 @@
 ﻿using FastQueryLib;
-using System.Data.SqlClient;
 using Moq;
 using SqlSyncDbServiceLib.BackupWorkers;
 using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 using SqlSyncDbServiceLib.ObjectTranfer.Interfaces;
 using SqlSyncDbServiceLib.RestoreWorkers;
+using System.Data.SqlClient;
 using System.Diagnostics;
 
 namespace SqlSyncDbService.Tests;

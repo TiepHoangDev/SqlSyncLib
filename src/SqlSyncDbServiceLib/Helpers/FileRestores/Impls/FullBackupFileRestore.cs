@@ -1,5 +1,4 @@
-﻿using SqlSyncDbServiceLib.Helpers.FileRestores;
-using SqlSyncDbServiceLib.Helpers.ScriptsDb;
+﻿using SqlSyncDbServiceLib.Helpers.ScriptsDb;
 
 namespace SqlSyncDbServiceLib.Helpers.FileRestores.Impls
 {

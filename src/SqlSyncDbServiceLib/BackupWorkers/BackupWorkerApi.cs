@@ -1,12 +1,12 @@
 ﻿using FastQueryLib;
-using System.Data.SqlClient;
 using SqlSyncDbServiceLib.Helpers;
+using SqlSyncDbServiceLib.Helpers.FileBackups.Impls;
 using SqlSyncDbServiceLib.ObjectTranfer.Instances;
 using System;
+using System.Data.SqlClient;
 using System.Diagnostics;
 using System.IO;
 using System.Threading.Tasks;
-using SqlSyncDbServiceLib.Helpers.FileBackups.Impls;
 
 namespace SqlSyncDbServiceLib.BackupWorkers
 {
